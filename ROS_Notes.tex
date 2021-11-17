@@ -13,6 +13,9 @@
 \usepackage{indentfirst} %设置缩进的宏包
 \setlength{\parindent}{2em}
 \usepackage{enumerate} %用于编号的宏包
+\usepackage{hyperref} %用于引用的宏包
+% \hypersetup{colorlinks, linkcolor=blue} %设置引用的字体颜色
+
 
 
 % 封面部分
@@ -1024,7 +1027,7 @@ URDF（Unified Robot Description Format，统一机器人描述格式）是ROS�
     \item <collision>：用于描述link的碰撞部分
 \end{itemize}
 
-\subsection{<joint标签>}
+\subsection{<joint>标签}\label{subsec:joint}
 
 <joint>标签用于描述机器人关节的运动学和动力学属性，包括关节运动的位置和速度限制。根据机器人的关节运动形式，可以将其分为六种类型：
 
@@ -1072,78 +1075,444 @@ URDF（Unified Robot Description Format，统一机器人描述格式）是ROS�
     \item <safety\_controller>：用于描述安全控制器参数。
 \end{itemize}
 
+\subsection{<robot>标签}
 
+<robot>是完整机器人模型的最顶层标签，<link>和<joint>标签都必须包含在<robot>标签内。robot标签内可以设置机器人的名称，其基本语法如下：
 
+\begin{verbatim}
+    <robot name = "name of the robot">
+        <link> ...... </link>
+        <link> ...... </link>
+        <joint> ...... </joint>
+        <joint> ...... </joint>
+    </robot>
+\end{verbatim}
 
+\subsection{<gazebo>标签}
 
+<gazebo>标签用于描述机器人模型在Gazebo中仿真所需要的参数，包括机器人材料的属性、Gazebo插件。该标签不是机器人模型的必需部分，只有在Gazebo中仿真时才需要加入，其基本语法如下：
 
+\begin{verbatim}
+    <gazebo reference = "link_1">
+        <material>Gazebo/Black</material>
+    </gazebo>
+\end{verbatim}
 
+\section{创建URDF模型}
 
+以MRobot机器人为例。
 
+\subsection{创建功能包}
 
+使用如下命令创建一个urdf模型的功能包：
 
+\begin{verbatim}
+    $ catkin_create_pkg mrobot_description urdf xacro
+\end{verbatim}
 
+创建好的功能包中包含如下四个文件夹：
 
+\begin{itemize}
+    \item urdf：用于存放机器人模型的URDF文件或xacro文件
+    \item mashes：用于放置URDF中引用的模型渲染文件
+    \item launch：用于保存相关启动文件
+    \item config：用于保存rviz的配置文件
+\end{itemize}
 
+\subsection{URDF模型代码}
 
+\subsubsection{part 1}
 
+\begin{verbatim}
+    <?xml version="1.0" ?>
+    <robot name="mrobot_chassis">
+\end{verbatim}
 
+首先在文件开头，需要生命该文件使用XML描述，然后使用<robot>根标签定义一个机器人模型，并定义机器人的名称。
 
+\subsubsection{part 2}
+\begin{verbatim}
+    <link name="base_link">
+        <visual>
+            <origin xyz=" 0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder length="0.005" radius="0.13"/>
+            </geometry>
+            <material name="yellow">
+                <color rgba="1 0.4 0 1"/>
+            </material>
+        </visual>
+    </link>
+\end{verbatim}
 
+这一段代码描述机器人的底盘link，<visual>标签定义底盘的外观属性；
 
+在<geometry>标签下定义几何外观，我们将底盘抽象成一个圆柱，使用<cylinder>标签定义这个圆柱的半径和高；
 
+然后声明这个底盘圆柱在三维坐标位置和旋转姿态，使用<origin>标签设置底盘中心位置，底盘中心位于界面的中心点，所以将坐标设置为“0 0 0”，旋转设置也设置为“0 0 0”即可（圆柱体默认是垂直地面放置的）；
 
+另外，使用<material>标签设置底盘的颜色——”黄色“，其中<color>标签定义颜色的RGBA值（这里采用百分数描述，A为透明度参数）。
 
+\subsubsection{part 3}
 
+\begin{verbatim}
+    <joint name="base_left_motor_joint" type="fixed">
+        <origin xyz="-0.055 0.075 0" rpy="0 0 0" />        
+        <parent link="base_link"/>
+        <child link="left_motor" />
+    </joint>
+\end{verbatim}
 
+这一段代码定义一个关节joint，用来连接机器人底盘和左边驱动电机，joint类型为fixed类型，这种类型的joint是固定的（见\autoref{subsec:joint}）。
 
+<origin>标签设置了joint的起点，将起点设置在需要安装电机的底盘位置。
 
+\subsubsection{part 4}
 
+\begin{verbatim}
+    <link name="left_motor">
+        <visual>
+            <origin xyz="0 0 0" rpy="1.5707 0 0" />
+            <geometry>
+                <cylinder radius="0.02" length = "0.08"/>
+            </geometry>
+            <material name="gray">
+                <color rgba="0.75 0.75 0.75 1"/>
+            </material>
+        </visual>
+    </link>
+\end{verbatim}
 
+这一段代码描述了左侧电机的模型，外形也是圆柱体，采用<cylinder>标签。
 
+关于<origin>标签的设置：由于我们上面定义了一个joint用来将电机连接到底盘上，电机的位置是相对于joint计算的。在joint的位置设置中，已经将其放置到了安装电机的位置，所以电机模型的位置设置到“0 0 0”坐标就可以了。
 
+另外由于圆柱体默认垂直地面，因此我们需要将电机模型绕x轴旋转90°放置。
 
+\subsubsection{part 5}
 
+\begin{verbatim}
+    <joint name="left_wheel_joint" type="continuous">
+        <origin xyz="0 0.0485 0" rpy="0 0 0"/>
+        <parent link="left_motor"/>
+        <child link="left_wheel_link"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+\end{verbatim}
 
+这一段代码定义一个关节joint，用来连接电机和轮子，joint类型为continuous类型，这种类型的joint可以绕一个轴旋转（见\autoref{subsec:joint}）。
+
+<origin>标签将轮子的起点设置到电机的一端，<axis>标签定义该joint的旋转轴是y轴。
+
+\subsubsection{添加物理和碰撞属性}
+
+前面的代码仅创建了模型的可视化属性，还需要添加物理属性和碰撞属性，这里以机器人底盘base\_link为例：
+
+\begin{verbatim}
+    <link name="base_link">
+        <intertial>
+            <mass value="2"/>
+            <origin xyz="0 0 0.0"/>
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0"
+                     iyy="0.01" iyz="0.0" 
+                     izz="0.5"/>
+        </inertial>
+
+        <visual>
+            <origin xyz=" 0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder length="${base_link_length}" radius="${base_link_radius}"/>
+            </geometry>
+            <material name="yellow">
+            </material>
+        </visual>
 
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="${base_link_length}" radius="${base_link_radius}"/>
+            </geometry>
+        </collision>
+    </link>
+\end{verbatim}
+
+其中<intertial>标签设置惯性参数，主要包括质量和惯性矩阵，如果是规则物体，可以通过尺寸、质量等公式计算得到惯性矩阵（这里有待学习补充）。
+
+\section{使用xacro优化URDF模型}
+
+URDF文件不支持代码复用的特性，因此针对URDF模型提出了一种精简化、可复用、模块化的描述形式——xacro。
+
+xacro有两点优点：精简的模型代码、提供可编程接口。模型的后缀名由.urdf变为.xacro，并且需要在模型的<robot>标签中加入xacro的声明，代码如下：
 
+\begin{verbatim}
+    <?xml version="1.0"?>
+    <robot name="mrobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+\end{verbatim}
 
+\subsection{xacro的三个机制}
 
+\subsubsection{使用常量定义}
 
+定义常量的语法如下：
 
+\begin{verbatim}
+    <xacro:property name="M_PI" value="3.14159"/>
+\end{verbatim}
 
+使用常量的语法如下：
 
+\begin{verbatim}
+    <origin xyz="0 0 0" rpy="${M_PI} 0 0"/>
+\end{verbatim}
 
+\subsubsection{调用数学公式}
 
+在”\${}“语句中，不仅可以调用常量，还可以使用一些常用的数学运算，包括加减乘除、负号、括号等（所有运算都会被转换成浮点数进行），语法如下：
 
+\begin{verbatim}
+    <origin xyz="0 ${(motor_length+wheel_length)/2} 0" rpy="0 0 0"/>
+\end{verbatim}
 
+\subsubsection{使用宏定义}
 
+xacro文件可以使用宏定义来声明重复使用的代码模块，而且可以包含输入参数，以MRobot机器人的八根支撑柱为例，宏定义的语法示例如下：
 
+\begin{verbatim}
+    <xacro:macro name="mrobot_standoff_2in" params="parent number x_loc y_loc z_loc">
+        <joint name="standoff_2in_${number}_joint" type="fixed">
+            <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
+            <parent link="${parent}"/>
+            <child link="standoff_2in_${number}_link" />
+        </joint>
 
+        <link name="standoff_2in_${number}_link">
+            <inertial>
+                <mass value="0.001" />
+                <origin xyz="0 0 0" />
+                <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                         iyy="0.0001" iyz="0.0"
+                         izz="0.0001" />
+            </inertial>
 
+            <visual>
+                <origin xyz=" 0 0 0 " rpy="0 0 0" />
+                <geometry>
+                    <box size="0.01 0.01 0.07" />
+                </geometry>
+                <material name="black">
+                    <color rgba="0.16 0.17 0.15 0.9"/>
+                </material>
+            </visual>
 
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.01 0.01 0.07" />
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+\end{verbatim}
 
+以上的宏定义包含五个输入参数：joint的parent link，支撑住的序号，支撑柱在xyz三个方向上的偏移。这个宏定义在定义一个支撑柱的时候，分别对其joint和link两个标签进行了定义。
 
+当需要使用该宏模块的时候，按照如下语法进行调用：
 
+\begin{verbatim}
+    <mrobot_standoff_2in parent="base_link" number="1" x_loc="-${standoff_x/2 + 0.03}" 
+y_loc="-${standoff_y - 0.03}" z_loc="${plate_height/2}"/>
+\end{verbatim}
 
 
+\subsection{引用xacro文件}
 
+引用示例如下：
 
+\begin{verbatim}
+    <?xml version="1.0"?>
+    <robot name="mrobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+        <xacro:include filename="$(find mrobot_description)/urdf/mrobot_body.urdf
+    .xacro" />
+        <!-- MRobot机器人平台 -->
+        <mrobot_body/>
+    </robot>
+\end{verbatim}
 
+可以看到，在robot标签之间，首先使用了xacro:inlude标签，包含了另一个xacro模型文件，然后我们就可以在下面使用被包含文件中的模块了。接下来调用被包含文件中的机器人模型宏定义（机器人模型文件全部是在被包含文件中用一个宏来描述的）。
 
+这样将整个机器人模型作为一个宏有什么好处呢？把机器人整体看做一个模块，方便与其他模型进行集成，比如在后续安装传感器等其他模块时。
 
+\subsection{显示xacro优化后的模型}
 
+\subsubsection{将xacro文件转化成URDF文件}
 
+使用如下命令可以将xacro文件转换成URDF文件：
 
+\begin{verbatim}
+    $ rosrun xacro xacro.py mrobot.urdf.xacro > mrobot.urdf
+\end{verbatim}
 
+\subsubsection{直接调用xacro文件解析器}
 
+也可以省略手动转换的过程，直接在启动文件中调用xacro解析器，自动将xacro转换成URDF文件，在launch文件中使用如下语句进行配置：
 
+\begin{verbatim}
+    <arg name="model" default="$(find xacro)/xacro --inorder '$(find mrobot_description)/urdf/mrobot.urdf.xacro'" />
+	<arg name="gui" default="true" />
+\end{verbatim}
 
+进而可以直接使用这个修改后的启动文件，看到xacro格式的机器人模型。
 
+\section{添加传感器模型}
 
+首先我们需要自己创建一个传感器模型（xacro文件），或者去网上下载一个传感器的模型，这里以一个摄像头为例，其模型文件为camera.xacro。
 
+进而我们可以创建一个顶层xacro文件，将机器人主体与摄像头连接起来：
 
+\begin{verbatim}
+    <?xml version="1.0"?>
+    <robot name="mrobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+        <xacro:include filename="$(find mrobot_description)/urdf/mrobot_body.urdf
+    .xacro" />
+        <xacro:include filename="$(find mrobot_description)/urdf/camera.xacro" />
+
+        <xacro:property name="camera_offset_x" value="0.1" />
+        <xacro:property name="camera_offset_y" value="0" />
+        <xacro:property name="camera_offset_z" value="0.02" />
+
+        <!-- MRobot机器人平台-->
+        <mrobot_body/>
+
+        <!-- Camera -->
+        <joint name="camera_joint" type="fixed">
+            <origin xyz="${camera_offset_x} ${camera_offset_y} ${camera_offset_z}" rpy="0 0 0" />
+            <parent link="plate_2_link"/>
+            <child link="camera_link"/>
+        </joint>
+
+        <xacro:usb_camera prefix="camera"/>
+
+    </robot>
+\end{verbatim}
+
+在这个顶层文件中，包含了描述摄像头的模型文件以及描述机器人的模型文件，然后使用了一个fixed类型的joint把摄像头固定到机器人的指定位置。
+
+\section{基于ArbotiX和rviz的仿真器}
+
+ArbotiX提供一个差速控制器，通过接收速度控制指令更新机器人的joint状态，从而实现机器人在rviz中的运动。
+
+\subsection{在ROS-melodic中安装ArbotiX}
+
+Arbotix本质上就是一个功能包，我们需要像其他我们自己的功能包一样，将其放置在工作空间下的src目录下，直接从git上下载其源码：
+
+\begin{verbatim}
+    $ git clone -b indigo-devel https://github.com/vanadiumlabs/arbotix_ros.git
+\end{verbatim}
+
+然后重新编译工程即可（注意如果没有将设置环境变量的指令放到.bashrc中，在这里要记得使用source命令设置环境变量）。
+
+\subsection{配置ArbotiX控制器}
+
+我们只需要适当修改原本的launch文件，然后再创建一个控制器相关的配置文件就可以了。
+
+\subsubsection{修改launch文件}
+
+只是在显示机器人模型的launch文件的基础上加上如下内容：
+
+\begin{verbatim}
+    <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
+        <rosparam file="$(find mrobot_description)/config/fake_mrobot_arbotix.yaml" 
+    command="load" />
+        <param name="sim" value="true"/>
+    </node>
+\end{verbatim}
+
+从以上代码可以看出，实际上就是添加了一个控制器节点，这里在仿真环境中使用，需要配置“sim”参数为true。另外，从这里可以看到，启动时还需要加载一个叫“fake\_mrobot\_arbotix.yaml”的配置文件。
+
+\subsubsection{创建配置文件}
+
+配置文件的目录为：功能包目录/config/下，文件内容如下：
+
+\begin{verbatim}
+    controllers: {
+        base_controller: {
+            type: diff_controller, 
+            base_frame_id: base_footprint, 
+            base_width: 0.26, 
+            ticks_meter: 4100, 
+            Kp: 12, 
+            Kd: 12, 
+            Ki: 0, 
+            Ko: 50, 
+            accel_limit: 1.0 
+        }
+    }
+\end{verbatim}
+
+控制器的名称为“base\_controller”，类型为“diff\_controller”（差速控制器），另外还给出了参考坐标系、底盘尺寸、PID参数等。
+
+\subsection{运行仿真}
+
+需要注意的是，我们要设置参考坐标系（fixed frame）为“odom”，才可以看到小车的移动。
+
+\section{ros\_control}
+
+ros\_control是一套机器人控制中间件，包含一系列控制器接口、传动装置接口、硬件接口、控制器工具箱等。
+
+\subsection{ros\_control的框架}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{image/ros_control.png}
+\end{figure}
+
+上图是ros\_control的总体框架，可以看到正对不同类型的控制器（底盘、机械臂等），ros\_control可以提供多种类型的控制器，但是这些控制器的接口各不相同，为了提高代码的复用率，ros\_control还提供一个硬件的抽象层。硬件抽象层负责机器人硬件资源的管理，而controller从抽象层请求资源即可，并不直接接触硬件。
+
+\subsection{控制器}
+
+ROS的ros\_controllers功能包提供了一些常用的控制器：
+
+\begin{itemize}
+    \item effort\_controllers
+        \begin{itemize}
+            \item joint\_effort\_controller
+            \item joint\_position\_controller
+            \item joint\_velocity\_controller
+        \end{itemize}
+    \item joint\_state\_controller
+        \begin{itemize}
+            \item joint\_state\_controller
+        \end{itemize}
+    \item position\_controllers
+        \begin{itemize}
+            \item joint\_position\_controller
+        \end{itemize}
+    \item velocity\_controllers
+        \begin{itemize}
+            \item joint\_velocity\_controller
+        \end{itemize}
+\end{itemize}
+
+另外，也可以根据自己的需求创建需要的控制器，并通过控制器管理器进行管理（具体方法有需要再补充）。
+
+\subsection{硬件接口}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{image/硬件接口.png}
+\end{figure}
+
+硬件接口是控制器与RobotHW（硬件抽象层）沟通的接口，基本与控制器种类相对应。另外也可以根据自己的需求创建需要的接口（具体方法有需要再补充）。
+
+\subsection{传动系统}
+
+\subsection{关节约束}
+
+\subsection{控制器管理器}
+
+
+\section{Gazebo仿真}
 
 
 
