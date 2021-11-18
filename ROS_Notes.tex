@@ -15,6 +15,7 @@
 \usepackage{enumerate} %用于编号的宏包
 \usepackage{hyperref} %用于引用的宏包
 % \hypersetup{colorlinks, linkcolor=blue} %设置引用的字体颜色
+\usepackage{color} %用于设置字体颜色的宏包
 
 
 
@@ -1511,58 +1512,359 @@ ROS的ros\_controllers功能包提供了一些常用的控制器：
 
 \subsection{控制器管理器}
 
-
 \section{Gazebo仿真}
 
+\subsection{配置机器人模型}
 
+首先我们需要确定每个link的<inertia>元素已经进行了合理的设置，然后还要为每个必要的<link>、<joint>、<robot>设置<gazebo>标签，进而我们需要为模型添加传动装置以及控制器插件。
 
+\subsubsection{为link添加惯性参数和碰撞属性}
 
+这个在前面URDF模型文件中已经提到过了，但是在rviz中这一项并不是必须的，其中的模型可以只有显示部分，并没有物理属性，但是gazebo中进行的是物理仿真，所以相关的惯性参数以及碰撞属性等物理参数就是必须的了。
 
+另外，这里由于我们一般都使用xacro文件作为模型文件，相比URDF文件多了宏定义的机制；而且，我们知道，对于规则均匀刚体，其惯性参数矩阵是有一个固定的计算公式的。因此我们可以不再像之前那样每一个link的惯性参数都手动输入了，可以按照下面的方式采用宏定义进行自动计算，例如球体，我们可以定义这样一个宏用于计算其惯性矩阵：
 
+\begin{verbatim}
+    <xacro:macro name="sphere_inertial_matrix" params="m r">
+        <inertial>
+            <mass value="${m}" />
+            <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0"
+                    iyy="${2*m*r*r/5}" iyz="0" 
+                    izz="${2*m*r*r/5}" />
+        </inertial>
+    </xacro:macro>
+\end{verbatim}
 
+类似地，长方体：
 
+\begin{verbatim}
+    <xacro:macro name="box_inertial_matrix" params="m w h d">
+        <inertial>
+            <mass value="${m}" />
+            <inertia ixx="${m*(h*h+d*d)/12}" ixy = "0" ixz = "0"
+                     iyy="${m*(w*w+d*d)/12}" iyz = "0"
+                     izz="${m*(w*w+h*h)/12}" /> 
+        </inertial>
+    </xacro:macro>
+\end{verbatim}
 
+\subsubsection{为link添加<gazebo>标签}
 
+需要为每一个link添加<gazebo>标签，包含的属性仅有material。注意：这里的material属性和<visual>中的material属性作用相同，但是Gazebo无法通过<visual>中的material属性设置外观颜色，因此需要再添加<gazebo>标签进行设置，另外，Gazebo中提供了一些可以直接使用的颜色供我们使用。
 
+设置<gazebo>标签语法如下：
 
+\begin{verbatim}
+    <gazebo reference="wheel_${lr}_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+\end{verbatim}
 
+\subsubsection{为joint添加传动装置}
 
+需要在模型中加入<transmission>元素，将传动装置与joint进行绑定。语法如下：
 
+\begin{verbatim}
+    <transmission name="wheel_${lr}_joint_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="base_to_wheel_${lr}_joint" />
+        <actuator name="wheel_${lr}_joint_motor">
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+\end{verbatim}
 
+其中<type>标签声明了所使用的传动装置类型；<joint name>标签定义了将要绑定驱动器的joint；<actuator name>标签定义了传动装置的名称；并在其中使用<hardwareInterface>标签定义硬件接口类型，这里是速度控制接口；使用<mechanicalReduction>标签设置了传动比为1。
 
+\subsubsection{添加Gazebo控制器插件}
 
+Gazebo插件可以根据插件的运动范围应用到URDF模型的<robot>、<link>、<joint>上，需要使用<gazebo>标签作为封装，这里不同于上文中提到的“为link添加<gazebo>标签”，这里需要在<gazebo>标签下使用<plugin>标签来添加插件。
 
+~\\
+\noindent(1)为<link>、<joint>标签添加插件
 
+设置reference为对应<link>或<joint>的名字，其中<plugin>标签下的插件名字name可以自拟，filename是gazebo提供的现成文件，可以查看ROS安装路径（/opt/ros/melodic/lib）下，所有插件都是以.so命名的。
 
+\begin{verbatim}
+    <gazebo reference="your_link_name">
+        <plugin name="unique_name" filename="plugin_name.so"
+            ...plugin parameters...
+        </plugin>
+    </gazebo>
+\end{verbatim}
 
+\noindent(2)为<robot>标签添加插件：
 
+不设置reference属性即可。
 
+\begin{verbatim}
+    <gazebo>
+        <plugin name="unique_name" filename="plugin_name.so"
+            ...plugin parameters...
+        </plugin>
+    </gazebo>
+\end{verbatim}
 
+我们将一个差速控制的插件（libgazebo\_ros\_diff\_drive.so）应用到我们的示例机器人模型上，语法如下：
 
+\begin{verbatim}
+    <gazebo>
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <rosDebugLevel>Debug</rosDebugLevel>
+            <publishWheelTF>true</publishWheelTF>
+            <robotNamespace>/</robotNamespace>
+            <publishTf>1</publishTf>
+            <publishWheelJointState>true</publishWheelJointState>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100.0</updateRate>
+            <legacyMode>true</legacyMode>
+            <leftJoint>base_to_wheel_left_joint</leftJoint>
+            <rightJoint>base_to_wheel_right_joint</rightJoint>
+            <wheelSeparation>${base_link_radius*2}</wheelSeparation>
+            <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+            <broadcastTF>1</broadcastTF>
+            <wheelTorque>30</wheelTorque>
+            <wheelAcceleration>1.8</wheelAcceleration>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryFrame>odom</odometryFrame> 
+            <odometryTopic>odom</odometryTopic> 
+            <robotBaseFrame>base_footprint</robotBaseFrame>
+        </plugin>
+    </gazebo> 
+\end{verbatim}
 
+其中关键参数：
+\begin{itemize}
+    \item <robotNamespace>：机器人的命名空间，插件所有数据的发布和订阅都在该命名空间下。
+    \item <leftJoint>和<rightJoint>：左右轮转动关节的joint，控制器插件最终需要控制这两个joint转动。
+    \item <wheelSeparation>：轮子间距。
+    \item <wheelDiameter>：轮子半径。
+    \item \textcolor[rgb]{1,0,0}{wheelTorque>：这个怎么确定的？不重要吗？} 
+    \item <wheelAcceleration>：车轮转动加速度。
+    \item <commandTopic>：控制器订阅的速度控制指令，ROS中一般都命名为vel\_cmd。
+    \item <odometryFrame>：里程计数据的参考坐标系，ROS中一般都命名为odom。
+\end{itemize}
 
+\subsection{显示机器人模型}
 
+使用类似于以下的launch文件：
 
+\begin{verbatim}
+    <launch>
+        <!-- 设置launch文件的参数 -->
+        <arg name="world_name" value="$(find mrobot_gazebo)/worlds/playground.world"/>
+        <arg name="paused" default="false"/>
+        <arg name="use_sim_time" default="true"/>
+        <arg name="gui" default="true"/>
+        <arg name="headless" default="false"/>
+        <arg name="debug" default="false"/>
 
+        <!-- 运行gazebo仿真环境 -->
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(arg world_name)" />
+            <arg name="debug" value="$(arg debug)" />
+            <arg name="gui" value="$(arg gui)" />
+            <arg name="paused" value="$(arg paused)"/>
+            <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="headless" value="$(arg headless)"/>
+        </include>
 
+        <!-- 加载机器人模型描述参数（模型的路径在这里） -->
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(
+    find mrobot_gazebo)/urdf/mrobot.urdf.xacro'" /> 
 
+        <!-- 运行joint_state_publisher节点，发布机器人的关节状态  -->
+        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_
+    state_publisher" ></node> 
 
+        <!-- 运行robot_state_publisher节点，发布tf  -->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_
+    state_publisher"  output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node>
 
+        <!-- 在gazebo中加载机器人模型-->
+        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" 
+    output="screen"
+            args="-urdf -model mrobot -param robot_description"/> 
+    </launch>
+\end{verbatim}
 
+当我们想要加载一个机器人模型到Gazebo中，都可以使用上面的这种launch文件的代码形式，主要需要修改的就是我们要加载的机器人模型的路径。
 
+接下来，我们运行这个launch文件就可以启动Gazebo，并且在其中看到我们的机器人模型了。另外，由于这个模型已经订阅了vel\_cmd话题，我们也可以发布vel\_cmd话题消息来对Gazebo中的机器人进行控制了。
 
+\subsection{摄像头仿真}
 
+类似于机器人模型中的差速控制器插件，传感器的Gazebo插件也需要在URDF模型中进行配置，在原有的摄像头模型中添加<gazebo>标签，代码如下：
 
+\begin{verbatim}
+    <gazebo reference="${prefix}_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
 
+    <gazebo reference="${prefix}_link">
+        <sensor type="camera" name="camera_node">
+            <update_rate>30.0</update_rate>
+            <camera name="head">
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1280</width>
+                    <height>720</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>300</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+            </camera>
+            <plugin name="gazebo_camera" filename="libgazebo_ros_camera.so">
+                <alwaysOn>true</alwaysOn>
+                <updateRate>0.0</updateRate>
+                <cameraName>/camera</cameraName>
+                <imageTopicName>image_raw</imageTopicName>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                <frameName>camera_link</frameName>
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            </plugin>
+        </sensor>
+    </gazebo>
+\end{verbatim}
 
+这里添加了两个<gazebo>标签：
 
+第一个<gazebo>标签用来设置摄像头模型在Gazebo中的material，与之前提到的为每一个link添加<gazebo>标签作用相同。
 
+第二个<gazebo>标签设置摄像头插件。在加载摄像头插件的时候，需要使用<sensor>标签来包含传感器的各种属性。这里设置摄像头传感器，需要设置type为camera，传感器名字name可以自由设置；然后使用<camera>标签具体描述摄像头的参数，包括分辨率、编码格式、图像范围、噪声参数等；最后使用<plugin>标签加载摄像头的插件文件libgazebo\_ros\_camera.so，并设置插件的一下参数，包括命名空间、发布图像的话题、参考坐标系等。
 
+启动Gazebo下的机器人仿真之后，输入如下命令，使用rqt工具来看到摄像头的图像：
 
+\begin{verbatim}
+    $ rqt_image_view
+\end{verbatim}
 
+注意需要选择合适的话题才可以正确查看。
 
+\subsection{Kinect仿真}
 
+添加如下<gazebo>标签：
 
+\begin{verbatim}
+    <gazebo reference="${prefix}_link">
+        <sensor type="depth" name="${prefix}">
+            <always_on>true</always_on>
+            <update_rate>20.0</update_rate>
+            <camera>
+                <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
+                <image>
+                    <format>R8G8B8</format>
+                    <width>640</width>
+                    <height>480</height>
+                </image>
+                <clip>
+                    <near>0.05</near>
+                    <far>8.0</far>
+                </clip>
+            </camera>
+            <plugin name="kinect_${prefix}_controller" filename="libgazebo_ros_openni
+        _kinect.so">
+                <cameraName>${prefix}</cameraName>
+                <alwaysOn>true</alwaysOn>
+                <updateRate>10</updateRate>
+                <imageTopicName>rgb/image_raw</imageTopicName>
+                <depthImageTopicName>depth/image_raw</depthImageTopicName>
+                <pointCloudTopicName>depth/points</pointCloudTopicName>
+                <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+                <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraIn
+            foTopicName>
+                <frameName>${prefix}_frame_optical</frameName>
+                <baseline>0.1</baseline>
+                <distortion_k1>0.0</distortion_k1>
+                <distortion_k2>0.0</distortion_k2>
+                <distortion_k3>0.0</distortion_k3>
+                <distortiotinaji
+    </gazebo>
+\end{verbatim}
+
+\textcolor[rgb]{1,0,0}{这里为什么不需要一个<gazebo>标签来设置摄像头模型在Gazebo中的material了？} 
+
+这里需要设置传感器类型为depth，<camera>中的参数与摄像头的类似，分辨率和检测距离都可以在Kinect的手册中找到，最后使用<plugin>标签加载Kinect的插件文件libgazebo\_ros\_openni\_kinect.so，并设置插件相关参数。
+
+启动Gazebo下的机器人仿真之后，输入如下命令，使用rviz来查看Kinect的点云数据：
+
+\begin{verbatim}
+    $ rosrun rivz rviz
+\end{verbatim}
+
+注意需要设置fixed frame为camera\_frame\_optical，并且添加一个PointCloud2插件，并设置插件的订阅话题为“/camera/depth/points”才可以正确查看。
+
+\subsection{激光雷达仿真}
+
+添加如下<gazebo>标签：
+
+\begin{verbatim}
+    <gazebo reference="${prefix}_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="${prefix}_link">
+        <sensor type="ray" name="rplidar">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>5.5</update_rate>
+            <ray>
+                <scan>
+                <horizontal>
+                    <samples>360</samples>
+                    <resolution>1</resolution>
+                    <min_angle>-3</min_angle>
+                    <max_angle>3</max_angle>
+                </horizontal>
+                </scan>
+                <range>
+                <min>0.10</min>
+                <max>6.0</max>
+                <resolution>0.01</resolution>
+                </range>
+                <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.01</stddev>
+                </noise>
+            </ray>
+            <plugin name="gazebo_rplidar" filename="libgazebo_ros_laser.so">
+                <topicName>/scan</topicName>
+                <frameName>laser_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+\end{verbatim}
+
+激光雷达的传感器类型为ray，rplidar的相关参数可以在产品手册中找到，<ray>标签中设置了如下的雷达参数：360°检测范围、单圈360个采样点、5.5Hz采样频率、最远6m检测范围等。最后使用<plugin>标签加载激光雷达的插件文件libgazebo\_ros\_laser.so，并设置插件相关参数。
+
+启动Gazebo下的机器人仿真之后，输入如下命令，使用rviz来查看激光雷达的点云数据：
+
+\begin{verbatim}
+    $ rosrun rivz rviz
+\end{verbatim}
+
+注意需要设置fixed frame为base\_footprint，并且添加一个LaserScan插件，并设置插件的订阅话题为“/scan”才可以正确查看。
+
+% -------------------------chapter 5-------------------------
+\chapter{机器人SLAM与自主导航}
+
+三个重点问题：地图的精确建模、机器人准确定位、路径实时规划。
 
 
 
