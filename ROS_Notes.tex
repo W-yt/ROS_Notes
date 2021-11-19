@@ -1866,38 +1866,230 @@ Gazebo插件可以根据插件的运动范围应用到URDF模型的<robot>、<li
 
 三个重点问题：地图的精确建模、机器人准确定位、路径实时规划。
 
+\section{准备工作}
+
+\subsection{机器人要求}
+
+ROS中SLAM和自主导航的相关功能包可以用于各种移动机器人平台，但是为了达到最好的效果，对机器人硬件有如下的三个要求：
+
+\begin{itemize}
+    \item[-] 导航功能包对\textbf{差分、轮式机器人}的效果比较好，并且假设机器人可以直接使用速度指令进行控制，速度指令包括：linear（机器人在xyz三轴方向上的线速度，单位m/s）;angular(机器人在xyz三轴方向上的角速度，单位是rad/s)。
+    \item[-] 导航功能包要求机器人必须安装激光雷达等测距设备，可以获得环境的深度信息。
+    \item[-] 导航功能包以正方形和圆形机器人为模板进行开发，对于其他外形的机器人，虽然可以使用，但是效果可能不佳。
+\end{itemize}
+
+\subsection{传感器信息}
+
+\subsubsection{环境深度信息}
+
+针对激光雷达，ROS在sensor\_msgs包中定义了专用的数据结构——LaserScan，用于存储激光消息，其消息的核心内容如下：
+
+\begin{itemize}
+    \item angle\_min：可检测范围的起始角度。
+    \item angle\_max：可检测范围的终止角度，与angle\_min组成激光雷达的可检测范围。
+    \item angle\_increment：采集到相邻数据帧之间的角度步长。
+    \item time\_increment：采集到相邻数据帧之间的时间步长，\textcolor[rgb]{1,0,0}{当传感器处于相对运动状态时进行补偿使用。}
+    \item scan\_time：采集一帧数据所需要的时间。
+    \item range\_min：最近可检测深度的阈值。
+    \item range\_max：最远可检测深度的阈值。
+    \item ranges：一帧深度数据的存储数组。
+\end{itemize}
+
+如果使用的机器人没有激光雷达，但是配备有Kinect等RGB-D摄像头，也可以通过红外摄像头获取周围环境中的深度信息。但是RGB-D摄像头获取的原始深度信息是三维点云数据，我们需要将三维数据转换成二维数据，即只抽取其中的一行，重新封装为LaserScan消息，就可以获得需要的二维激光雷达信息。
+
+ROS中也提供了相应的功能包——depthimage\_to\_laserscan来实现三维点云数据到二维的转换功能，从而将点云深度数据转换成激光数据。可以在launch文件中使用如下方法调用：
+
+\begin{verbatim}
+    <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depth
+image_to_laserscan" output="screen">
+        <remap from="image" to="/camera/depth_registered/image_raw"/> 
+        <remap from="camera_info" to="/camera/depth_registered/camera_info"/>
+        <remap from="scan" to="/kinect_scan"/>
+        <param name="output_frame_id" value="/camera_link"/>
+    </node>
+\end{verbatim}
+
+\subsubsection{里程计信息}
+
+里程计根据传感器获取的数据来估计机器人随时间发生的位置变化，在机器人平台中，较为常见的里程计是编码器。里程计一般根据速度对时间的积分求得位置，这种方法对误差十分敏感，所以采取如精确的数据采集、设备标定、数据滤波等措施是十分必要的。
+
+导航功能包要求机器人能够发布里程计nav\_msgs/Odometry消息，其中包含机器人在自由空间中的位置和速度的估算值：
+
+\begin{itemize}
+    \item pose：机器人当前位置坐标，包括机器人的xyz三轴位置与方向参数，以及用于校正误差的协方差矩阵。
+    \item twist：机器人当前的运动状态，包括xyz三轴的线速度与角速度，以及用于校正误差的协方差矩阵。
+\end{itemize}
+
+\textcolor[rgb]{1,0,0}{上述数据结构中，用于滤波算法的协方差矩阵，在精度要求不高的机器人系统中可以使用默认的协方差矩阵；而在精度要求较高的系统中，需要先对机器人精确建模后，再通过仿真、实验等方法确定该矩阵的具体数值。}
+
+\section{gmapping}
+
+gmapping已经集成在ROS中，是移动机器人中使用最多的SLAM算法。这个算法是一种基于 Rao-Blackwellized的粒子滤波的 SLAM方法。基于粒子滤波的算法用许多加权粒子表示路径的后验概率，每个粒子都给出一个重要性因子。但是，它们通常需要大量的粒子才能获得比较好的的结果，从而增加该算法的的计算复杂性。
+
+\subsection{gmapping功能包介绍}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/gmapping框架.png}
+\end{figure}
+
+gmapping功能包订阅机器人的深度信息、IMU信息和里程计信息，同时完成一些必要参数的配置，即可创建并输出\textbf{基于概率}的二维栅格地图。
+
+gmapping功能包向用户开放的接口如下：
+
+（1）话题和服务：
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c}
+    \hline
+                                                                        & 名称            & 类型                      & 描述                                                                    \\ \hline
+    \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Topic\\ 订阅\end{tabular}} & tf            & tf/tfMessage            & \begin{tabular}[c]{@{}c@{}}用于激光雷达坐标系、基坐标系、\\ 里程计坐标系之间的变换\end{tabular} \\ \cline{2-4} 
+                                                                        & scan          & sensor\_msgs/LaserScan  & 激光雷达扫描数据                                                              \\ \hline
+    \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}Topic\\ 发布\end{tabular}} & map\_metadata & nav\_msgs/MapMetaData   & 发布地图Meta数据                                                            \\ \cline{2-4} 
+                                                                        & map           & nav\_msgs/OccupancyGrid & 发布地图栅格数据                                                              \\ \cline{2-4} 
+                                                                        & $\sim$entropy & std\_msgs/Float64       & 发布机器人姿态分布熵的估计                                                         \\ \hline
+    Service                                                             & dynamic\_map  & nav\_msgs/GetMap        & 获取地图数据                                                                \\ \hline
+    \end{tabular}
+    \end{table}
+
+（2）坐标变换：
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|l}
+        \hline
+                                 & TF变换                                            & 描述                                                                                                                          \\ \hline
+        \multirow{2}{*}{必需的TF变换} & \textless{}scan frame\textgreater $\rightarrow$ base\_link & \begin{tabular}[c]{@{}l@{}}激光雷达坐标系与基坐标系之间的变换，\\ 一般由robot\_states\_publisher或者\\ static\_transform\_publisher发布\end{tabular} \\ \cline{2-3} 
+                                 & base\_link $\rightarrow$ odom                              & \begin{tabular}[c]{@{}l@{}}基坐标系与里程计坐标系之间的变换，\\一般由里程计节点发布\end{tabular}                                                      \\ \hline
+        发布的TF变换                  & map $\rightarrow$ odom                                     & \begin{tabular}[c]{@{}l@{}}地图坐标系与机器人里程计坐标系之间的\\变换，估计机器人在地图中的位姿\end{tabular}                                                \\ \hline
+        \end{tabular}
+        \end{table}
+
+（3）参数
+
+gmapping功能包中可供配置的参数有很多，使用后将重点参数记录在下面：
 
 
 
+\subsection{gmapping节点配置与运行}
 
+首先创建一个运行gmapping节点的launch文件(gmapping.launch)，主要用于节点参数的配置，文件代码如下：
 
+\begin{verbatim}
+    <launch>
+        <arg name="scan_topic" default="scan" />
 
+        <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="scr
+    een" clear_params="true">
+            <param name="odom_frame" value="odom"/>
+            <param name="map_update_interval" value="5.0"/>
+            <!-- Set maxUrange < actual maximum range of the Laser -->
+            <param name="maxRange" value="5.0"/>
+            <param name="maxUrange" value="4.5"/>
+            <param name="sigma" value="0.05"/>
+            <param name="kernelSize" value="1"/>
+            <param name="lstep" value="0.05"/>
+            <param name="astep" value="0.05"/>
+            <param name="iterations" value="5"/>
+            <param name="lsigma" value="0.075"/>
+            <param name="ogain" value="3.0"/>
+            <param name="lskip" value="0"/>
+            <param name="srr" value="0.01"/>
+            <param name="srt" value="0.02"/>
+            <param name="str" value="0.01"/>
+            <param name="stt" value="0.02"/>
+            <param name="linearUpdate" value="0.5"/>
+            <param name="angularUpdate" value="0.436"/>
+            <param name="temporalUpdate" value="-1.0"/>
+            <param name="resampleThreshold" value="0.5"/>
+            <param name="particles" value="80"/>
+            <param name="xmin" value="-1.0"/>
+            <param name="ymin" value="-1.0"/>
+            <param name="xmax" value="1.0"/>
+            <param name="ymax" value="1.0"/>
+            <param name="delta" value="0.05"/>
+            <param name="llsamplerange" value="0.01"/>
+            <param name="llsamplestep" value="0.01"/>
+            <param name="lasamplerange" value="0.005"/>
+            <param name="lasamplestep" value="0.005"/>
+            <remap from="scan" to="$(arg scan_topic)"/>
+        </node>
+    </launch>
+\end{verbatim}
 
+这些参数都有默认值，可以等SLAM可以正常运行之后，再考虑调整优化参数。但是需要重点检查这两个参数：
 
+\begin{itemize}
+    \item 里程计坐标系的设置，odom\_frame参数需要和机器人本身的里程计坐标系一致。
+    \item 激光雷达的话题名，gmapping节点订阅的激光雷达话题名是“/scan”，如果与机器人发布的激光雷达话题名不一致，需要使用<remap>进行重映射。
+\end{itemize}
 
+接下来创建一个启动gmapping例程的文件(gmapping\_demo.launch)。主要代码如下：
 
+\begin{verbatim}
+    <launch>
+        <include file="$(find mrobot_navigation)/launch/gmapping.launch"/>
+        <!-- 启动rviz -->
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find mrobot_navigation)/rviz/gmapping.rviz"/>
+    </launch>
+\end{verbatim}
 
+这个launch文件主要包含：
 
+\begin{itemize}
+    \item 启动之前创建的gmapping节点。
+    \item 启动rviz界面，查看传感器和地图构建的实时信息。
+\end{itemize}
 
+\subsection{在Gazebo中仿真SLAM(gmapping)}
 
+启动Gazebo仿真环境和gmapping节点：
 
+\begin{verbatim}
+    $ roslaunch mrobot_gazebo mrobot_laser_nav_gazebo.launch
+    $ roslaunch mrobot_navigation gmapping_demo.launch
+\end{verbatim}
 
+启动键盘控制节点：
 
+\begin{verbatim}
+    $ roslaunch mrobot_teleop mrobot_teleop.launch
+\end{verbatim}
 
+操作机器人在地图中运动一圈，就可以基本完成地图的构建了，构建完成后，可以使用如下命令保存构建好的地图：
 
+\begin{verbatim}
+    $ rosrun map_server map_saver
+\end{verbatim}
 
+保存好的文件默认文件名为map，包含：
+\begin{itemize}
+    \item 一个map.pgm地图数据文件
+    \item 一个map.yaml地图配置文件：其中包含关联的地图数据文件、地图分辨率、起始位置、地图数据和阈值等配置参数。
+\end{itemize}
 
+\section{hector-slam}
 
+hector\_slam功能包使用高斯牛顿法，不需要里程计数据，只根据激光信息便可构建地图。因此该功能包可以很好的在空中机器人、手持构图设备以及特种机器人中使用。但是该算法需要高更新频率小测量噪声的激光雷达，当只有低更新率的激光传感器时，即便测距估计很精确，对该系统都会出现一定的问题。
 
+\section{cartographer}
 
+cartographer是Google的实时室内建图项目，考虑到基于模拟策略的粒子滤波方法在较大环境中对内存和计算资源的需求较高，cartographer采用基于图网络的优化方法。
 
+\section{rgbdslam}
 
+不同于上述方法，rgbdslam是一个3D SLAM功能包。可以实现三维信息的地图构建，可以把周围环境的三维模型全部构建出来，机器人不仅知道地图中的什么位置有一个障碍物，而且知道该障碍物是什么。
 
+\section{ORB\_SLAM}
 
+ORB\_SLAM是一个基于特征点的实时单目SLAM系统，能够实时解算摄像机的移动轨迹，同时构建简单的三维点云地图，在大范围中做闭环检测，并实时进行全局重定位，不仅适用于手持设备获取的一组连续图像，同时适用于汽车行驶过程中获取的连续图像。
 
+\section{导航功能包}
 
+\subsection{导航框架}
 
-
+导航的关键是机器人的定位和路径规划两大部分。
 
 
 
