@@ -2089,56 +2089,279 @@ ORB\_SLAM是一个基于特征点的实时单目SLAM系统，能够实时解算�
 
 \subsection{导航框架}
 
-导航的关键是机器人的定位和路径规划两大部分。
+导航的关键是机器人的定位和路径规划两大部分，ROS也对应地提供了两个功能包：
 
-这里
+\begin{itemize}
+    \item move\_base：实现机器人导航中的最优路径规划。
+    \item amcl：实现二维地图中的机器人定位。
+\end{itemize}
 
+在上述两个功能包的基础上，ROS提供了一整套导航功能框架，如下图所示：
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{image/导航功能包框架.png}
+\end{figure}
 
+机器人需要发布必要的传感器信息和导航的目标位置；move\_base功能包提供导航的主要运行、交互接口；amsl功能包对机器人进行精确定位，保障导航路径的准确性。
 
+机器人通过ROS发布sensor\_msgs/LaserScan或者sensor\_msgs/PointCloud格式的消息，也就是二维激光信息或者三维点云信息，从而为导航功能包提供机器人的传感器信息，以达到实时避障的效果。
 
+其次导航包要求机器人发布nav\_msgs/Odometry格式的里程计信息，同时也要发布相应的TF变换。
 
+最后导航功能包的输出是geometry\_msgs/Twist格式的控制指令，这就要求机器人控制节点具备解析控制指令中线速度、角速度的能力，并且最终通过这些指令控制机器人完成相应的运动。
 
+\subsection{move\_base功能包}
 
+move\_base功能包中主要由两个规划器组成：
 
+\begin{itemize}
+    \item 全局路径规划（global\_planner）:根据给定的目标位置和全局地图进行总体的路径规划（使用Dijkstra或者$A^{*}$算法）。
+    \item 本地路径规划（local\_planner）: 针对地图信息和机器人附近随时可能出现的障碍物规划机器人每个周期内应该行使的路径。使之尽可能符合全局最优路径（使用Dynamic Window Approaches算法搜索躲避和行进的多条路径，综合各评价标准(是否会撞击障碍物、所需要的时间)选取最优路径，并且计算行使周期内的线速度和角速度，避免与动态出现的障碍物发生碰撞）。
+\end{itemize}
 
+move\_base功能包的一些接口:
 
+（1）话题和服务
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|l}
+        \hline
+                                                                         & 名称                                                                    & 类型                                                                                 & \multicolumn{1}{c}{描述}                                                                             \\ \hline
+        \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}动作\\ 订阅\end{tabular}} & \begin{tabular}[c]{@{}c@{}}move\_base/\\ goal\end{tabular}            & \begin{tabular}[c]{@{}c@{}}move\_base\_msgs/\\ MoveBaseActionGoal\end{tabular}     & move\_base的运动规划目标                                                                                  \\ \cline{2-4} 
+                                                                         & \begin{tabular}[c]{@{}c@{}}move\_base/\\ cancel\end{tabular}          & actionlib\_msgs/GoalID                                                             & 取消特定目标的请求                                                                                          \\ \hline
+        \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}动作\\ 发布\end{tabular}} & \begin{tabular}[c]{@{}c@{}}move\_base/\\ feedbback\end{tabular}       & \begin{tabular}[c]{@{}c@{}}move\_base\_msgs/\\ MoveBaseActionFeedback\end{tabular} & \begin{tabular}[c]{@{}l@{}}反馈信息\\ 含有机器人底盘的坐标\end{tabular}                                          \\ \cline{2-4} 
+                                                                         & \begin{tabular}[c]{@{}c@{}}move\_base/\\ status\end{tabular}          & \begin{tabular}[c]{@{}c@{}}actionlib\_msgs/\\ GoalStatusArray\end{tabular}         & 发送到move\_base的目标状态信息                                                                               \\ \cline{2-4} 
+                                                                         & \begin{tabular}[c]{@{}c@{}}move\_base/\\ result\end{tabular}          & \begin{tabular}[c]{@{}c@{}}move\_base\_msgs/\\ MoveBaseActionResult\end{tabular}   & 此处move\_base操作结果为空                                                                                 \\ \hline
+        \begin{tabular}[c]{@{}c@{}}话题\\ 订阅\end{tabular}                  & \begin{tabular}[c]{@{}c@{}}move\_base\_\\ simple/goal\end{tabular}    & \begin{tabular}[c]{@{}c@{}}geometry\_msgs/\\ PoseStamped\end{tabular}              & \begin{tabular}[c]{@{}l@{}}为无需追踪目标执行状态的用户\\ 提供一个非action接口\end{tabular}                             \\ \hline
+        \begin{tabular}[c]{@{}c@{}}话题\\ 发布\end{tabular}                  & cmd\_vel                                                              & geometry\_msgs/Twist                                                               & 输出到机器人底盘的速度指令                                                                                      \\ \hline
+        \multirow{3}{*}{服务}                                              & $\sim$make\_plan                                                      & nav\_msgs/GetPlan                                                                  & \begin{tabular}[c]{@{}l@{}}允许用户从move\_base获取给定目标\\ 的路径规划，但不会执行该路径规划\end{tabular}                   \\ \cline{2-4} 
+                                                                         & \begin{tabular}[c]{@{}c@{}}$\sim$clean\_unknow\\ \_space\end{tabular} & std\_srvs/Empty                                                                    & \begin{tabular}[c]{@{}l@{}}允许用户直接清除机器人周围的未知\\ 空间，适合costmap停止很长时间之后 \\ 在一个全新环境中重新启动时使用\end{tabular} \\ \cline{2-4} 
+                                                                         & $\sim$clear\_costmaps                                                 & std\_srvs/Empty                                                                    & \begin{tabular}[c]{@{}l@{}}允许用户命令move\_base节点清除\\ costmap中的障碍，这可能会导致\\ 机器人撞上障碍物，谨慎使用\end{tabular}  \\ \hline
+    \end{tabular}
+\end{table}
 
+（2）参数
 
+待补充
 
+\subsection{amcl功能包}
 
+自主定位即机器人在任意状态下都可以推算出自己在地图中所处的位置。ROS为开发者提供了一种自适应（或kld采样）的蒙特卡洛定位方法（amcl）,这是一种概率统计方法，针对已有地图使用粒子滤波器跟踪一个机器人的姿态。
 
+amcl功能包的一些接口:
 
+（1）话题和服务
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|l}
+        \hline
+                                                                         & 名称                                                                   & 类型                                                                                  & \multicolumn{1}{c}{描述}                                                                       \\ \hline
+        \multirow{4}{*}{\begin{tabular}[c]{@{}c@{}}话题\\ 订阅\end{tabular}} & Scan                                                                 & sensor\_msgs/LaserScan                                                              & 激光雷达数据                                                                                       \\ \cline{2-4} 
+                                                                         & Tf                                                                   & tf/tfMessgae                                                                        & 坐标变换信息                                                                                       \\ \cline{2-4} 
+                                                                         & initialpose                                                          & \begin{tabular}[c]{@{}c@{}}geometry\_msgs/\\ PoseWithCovarianceStamped\end{tabular} & \begin{tabular}[c]{@{}l@{}}用来初始化粒子滤波器的均\\ 值和协方差\end{tabular}                                 \\ \cline{2-4} 
+                                                                         & map                                                                  & nav\_msgs/OccupancyGrid                                                             & \begin{tabular}[c]{@{}l@{}}设置use\_map\_topic参数时\\ ，amcl订阅map话题以获取\\ 地图数据，用于激光定位\end{tabular} \\ \hline
+        \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}话题\\ 发布\end{tabular}} & amcl\_pose                                                           & \begin{tabular}[c]{@{}c@{}}geometry\_msgs/\\ PoseWithCovarianceStamped\end{tabular} & \begin{tabular}[c]{@{}l@{}}机器人在地图中的位姿估计，\\ 带有协方差信息\end{tabular}                              \\ \cline{2-4} 
+                                                                         & particlecloud                                                        & geometry\_msgs/PoseArray                                                            & \begin{tabular}[c]{@{}l@{}}粒子滤波器维护的位姿估计\\ 集合\end{tabular}                                    \\ \cline{2-4} 
+                                                                         & Tf                                                                   & tf/tfMessgae                                                                        & 发布从odom到map的转换                                                                               \\ \hline
+        \multirow{2}{*}{服务}                                              & global\_lacalization                                                 & std\_srvs/Empty                                                                     & \begin{tabular}[c]{@{}l@{}}初始化全局定位，所有粒子\\ 被随机撒在地图的空闲区域\end{tabular}                          \\ \cline{2-4} 
+                                                                         & \begin{tabular}[c]{@{}c@{}}request\_nomotion\\ \_update\end{tabular} & std\_srvs/Empty                                                                     & \begin{tabular}[c]{@{}l@{}}手动执行更新并发布更新的\\ 粒子\end{tabular}                                    \\ \hline
+        \begin{tabular}[c]{@{}c@{}}服务\\ 调用\end{tabular}                  & static\_map                                                          & nav\_msgs/GetMap                                                                    & \begin{tabular}[c]{@{}l@{}}amcl调用该服务来获取地图\\ 数据\end{tabular}                                  \\ \hline
+        \end{tabular}
+        \end{table}
+（2）参数
 
+待补充
 
+（3）坐标变换
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{image/amcl坐标变换.png}
+\end{figure}
 
+里程计定位和amcl定位的区别：
 
+\begin{itemize}
+    \item 里程计定位：只是通过里程计的数据来处理/base和/odom之间的TF变换
+    \item amcl定位：可以估算机器人在地图坐标系/map下的位姿信息，提供/base、/odom、/map之间的TF变换。
+\end{itemize}
 
+\subsection{代价地图的配置}
 
+\textcolor[rgb]{1,0,0}{代价地图的名称的意义是什么？}
 
+导航功能包使用两种代价地图存储周围环境中的障碍信息：一种用于全局路径规划（global\_costmap），一种用于本地路径规划和实时避障（lacal\_costmap）。
 
+两种代价地图需要使用共用的配置文件：通用配置文件；以及分别独立的配置文件：全局规划配置文件和本地规划配置文件。
 
+\subsubsection{通用配置文件}
 
+代价地图用来存储周围环境的障碍信息，其中需要声明地图专注的机器人传感器信息，以便于地图信息的更新。对于两种代价地图通用的配置选项，创建一个名为costmap\_common\_params.yaml的配置文件，代码如下：
 
+\begin{verbatim}
+    obstacle_range: 2.5
+    raytrace_range: 3.0
+    # footprint: [[0.175, 0.175], [0.175, -0.175], [-0.175, -0.175], [-0.175, 0.175]]
+    # footprint_inflation: 0.01
+    robot_radius: 0.175
+    inflation_radius: 0.15
+    max_obstacle_height: 0.6
+    min_obstacle_height: 0.0
+    observation_sources: scan
+    scan: {data_type: LaserScan, topic: /scan, marking: true, clearing: true, expec
+ted_update_rate: 0}
+\end{verbatim}
 
+其中代码段：
 
+\begin{verbatim}
+    obstacle_range: 2.5
+    raytrace_range: 3.0
+\end{verbatim}
 
+用来设置代价地图中障碍物的相关阈值：obstacle\_range参数用来设置机器人检测障碍物的最大范围，若设置为2.5，则表示在2.5m范围内检测道德障碍物信息才会在地图中进行更新；raytrace\_range参数用来设置机器人检测自由空间的最大范围，若设置为3.0，则表示在3m范围内，机器人将根据传感器信息清除范围内的自由空间\textcolor[rgb]{1,0,0}{（这里的自由空间是不是指没有障碍物的空间）}。
 
+代码段：
 
+\begin{verbatim}
+    # footprint: [[0.175, 0.175], [0.175, -0.175], [-0.175, -0.175], [-0.175, 0.175]]
+    # footprint_inflation: 0.01
+    robot_radius: 0.175
+    inflation_radius: 0.1
+\end{verbatim}
 
+footprint参数用来设置机器人在二维地图上占用的面积，参数以机器人的中心作为坐标原点。如果机器人的外形是圆形的，则需要设置机器人的外形半径robot\_radius。inflation\_radius参数用来设置障碍物的膨胀系数，也就是机器人应该与障碍物保持的最小安全距离，这里设置为0.1，表示机器人规划的路径应该与障碍物保持0.1m以上的安全距离。
 
+代码段：
 
+\begin{verbatim}
+    max_obstacle_height: 0.6
+    min_obstacle_height: 0.0
+\end{verbatim}
 
+这两个参数用来描述障碍物的最大高度和最小高度。（\textcolor[rgb]{1,0,0}{有什么用呢？}）
 
+代码段：
 
+\begin{verbatim}
+    observation_sources: scan
+    scan: {data_type: LaserScan, topic: /scan, marking: true, clearing: true, expec
+ted_update_rate: 0}
+\end{verbatim}
 
+observation\_sources参数列出了代价地图需要关注的所有传感器信息，每个传感器信息都会在后面列举出详细内容。
 
+这里以激光雷达为例：
 
+\begin{itemize}
+    \item sensor\_farme表示传感器的参考系名称；
+    \item data\_type表示激光数据或者点云数据使用的消息类型；
+    \item topic\_name表示传感器发布的话题名称；
+    \item marking和clearing表示是否需要使用传感器的实时信息来添加或者清除代价函数中的障碍物信息。
+\end{itemize}
 
+\subsubsection{全局规划配置文件}
 
+全局规划配置文件用来存储全局代价地图的配置参数，命名为global\_costmap\_params.yaml，代码如下：
+
+\begin{verbatim}
+    global_costmap:
+        global_frame: map
+        robot_base_frame: base_footprint
+        update_frequency: 1.0
+        publish_frequency: 1.0
+        static_map: true
+        rolling_window: false
+        resolution: 0.01
+        transform_tolerance: 1.0
+        map_type: costmap
+ \end{verbatim}
+
+\begin{itemize}
+    \item global\_frame参数用来表示全局代价函数需要在哪个参考系下匀性，这里选择了map参考系；
+    \item robot\_base\_frame参数用来设置代价地图可以参考的机器人本体的坐标系；
+    \item update\_frequency参数决定全局地图信息更新的频率；
+    \item static\_map参数用来决定代价地图是否需要根据map\_server提供的地图信息进行初始化。
+\end{itemize}
+
+\subsubsection{本地规划配置文件}
+
+本地规划配置文件用来存储本地代价地图的配置参数，命名为local\_costmap\_params.yaml，代码如下：
+
+\begin{verbatim}
+    local_costmap:
+        global_frame: odom
+        robot_base_frame: base_footprint
+        update_frequency: 3.0
+        publish_frequency: 1.0
+        static_map: true
+        rolling_window: false
+        width: 6.0
+        height: 6.0
+        resolution: 0.01
+        transform_tolerance: 1.0
+\end{verbatim}
+
+前面几个参数的意义与全局规划配置文件相同，另外：
+
+\begin{itemize}
+    \item publish\_frequency参数用来设置代价地图发布可视化信息的频率；
+    \item rolling\_window参数用来设置在机器人移动过程中是否需要滚动窗口，以保持机器人在中心；
+    \item width、height、resolution参数设置代价地图的长、高、分辨率（米/格）。
+\end{itemize}
+
+\subsection{本地规划器配置}
+
+本地规划器的主要作用为：根据规划的全局路径计算发布给机器人的速度控制指令。该规划器要根据机器人的规格配置相关参数，创建名为base\_local\_planner\_params.yaml的配置文件，代码如下：
+
+\begin{verbatim}
+    controller_frequency: 3.0
+    recovery_behavior_enabled: false
+    clearing_rotation_allowed: false
+
+    TrajectoryPlannerROS:
+        max_vel_x: 0.5
+        min_vel_x: 0.1
+        max_vel_y: 0.0  # zero for a differential drive robot
+        min_vel_y: 0.0
+        max_vel_theta: 1.0
+        min_vel_theta: -1.0
+        min_in_place_vel_theta: 0.5
+        escape_vel: -0.1
+        acc_lim_x: 1.5
+        acc_lim_y: 0.0 # zero for a differential drive robot
+        acc_lim_theta: 1.2
+
+        holonomic_robot: false
+        yaw_goal_tolerance: 0.1 # about 6 degrees
+        xy_goal_tolerance: 0.1  # 10 cm
+        latch_xy_goal_tolerance: false
+        pdist_scale: 0.9
+        gdist_scale: 0.6
+        meter_scoring: true
+
+        heading_lookahead: 0.325
+        heading_scoring: false
+        heading_scoring_timestep: 0.8
+        occdist_scale: 0.1
+        oscillation_reset_dist: 0.05
+        publish_cost_grid_pc: false
+        prune_plan: true
+
+        sim_time: 1.0
+        sim_granularity: 0.025
+        angular_sim_granularity: 0.025
+        vx_samples: 8
+        vy_samples: 0 # zero for a differential drive robot
+        vtheta_samples: 20
+        dwa: true
+        simple_attractor: false
+\end{verbatim}
+
+该配置文件中，声明机器人本地规划采用Trajectory Rollout算法，并设置算法中需要用到的机器人速度、加速度的阈值等参数。
 
 
 
