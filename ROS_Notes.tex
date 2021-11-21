@@ -2089,6 +2089,223 @@ ORB\_SLAM是一个基于特征点的实时单目SLAM系统，能够实时解算�
 
 \subsection{三维空间中的刚体运动(基础知识补充)}
 
+为什么要研究这个问题？因为当我们描述机器人的位姿时，就是在描述一个刚体在三维空间中的运动。
+
+三维空间中，刚体的运动可以用两个概念来表示：旋转和平移。平移比较简单一些，一般用一个表示位移的向量来表示。而旋转则有多种表示方法，例如旋转矩阵、旋转向量等等，不同的表示方法各有优劣
+
+\subsubsection{向量}
+
+在描述旋转矩阵前我们先明确向量这个概念。向量是空间中的一个具体实物且不和任何实数相关联。为了描述向量，应该先确定一个具体的坐标系，明确该坐标系的线性基 $\begin{bmatrix} e_1 & e_2 & e_3 \end{bmatrix}$ 后才能够确定一个向量 $a$ 在该坐标系下的坐标：
+
+\begin{equation}
+    a = 
+    \begin{bmatrix}
+      e_1 & e_2 & e_3
+    \end{bmatrix}
+    \begin{bmatrix}
+     a_1\\
+     a_2\\
+     a_3
+    \end{bmatrix}
+    = a_1e_1+a_2e_2+a_3e_3
+\end{equation}
+
+也就是说：向量坐标的具体取值，和向量本身和选取的坐标系相关。
+
+接下来介绍向量间的两种运算：内积（点乘）和外积（叉乘）
+
+内积可以描述向量之间的投影关系：
+
+\begin{equation}
+    a \cdot b = a^Tb = \sum_{i=1}^3 a_ib_i = |a||b|cos<a,b>
+\end{equation}
+
+外积可以表示向量的旋转：
+
+\begin{equation}
+    a \times b 
+    = 
+    \begin{vmatrix}
+        i & j & k\\
+        a_1 & a_2 & a_3\\
+        b_1 & b_2 & b_3
+    \end{vmatrix}
+    =
+    \begin{bmatrix}
+        a_2b_3-a_3b_2\\
+        a_3b_1-a_1b_3\\
+        a_1b_2-a_1b_1
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        0 & -a_3 & a_2\\
+        a_3 & 0 & -a_1\\
+        -a_2 & a_1 & 0
+    \end{bmatrix}b
+    =
+    a^{\wedge}b
+\end{equation}
+
+外积的方向垂直于这两个向量，大小为$ |a||b|sin<a,b> $，是两个向量张成的四边形的有向面积。
+
+其中我们引入了一个符号：$\wedge$，把$a$写成一个反对称矩阵，可以将其记成一个反对称符号。因此我们就把外积$a\times b$写成了矩阵和向量的乘法$a^{\wedge}b$，从而将其变成了线性运算。
+
+用外积表示旋转：
+
+在右手法则下，用右手的四个手指（握拳）从a转向b，大拇指的朝向就是旋转向量的方向，也就是$a\times b$的方向，它的大小由a和b的夹角决定。
+
+\subsubsection{欧式变换}
+
+假设存在两个坐标系：一个世界坐标系，是一个惯性系，认为它是固定不动的；另一个是一个机器人坐标系，是随机器人移动的坐标系。假设机器人观察到了某个向量$p$, 它在这两个坐标系中分别有一套坐标。前面说了，向量是一个客观存在的实体，那么必然有一个关系能够将这两套坐标联系起来。
+
+这个关系就是欧式变换。因为机器人的运动是一个刚体运动，所以同一个向量在不同坐标系下的模长和方向都不会发生变化。这样一个欧式变换就是由一个旋转和一个平移两部分组成。
+
+\subsubsection{旋转矩阵}
+
+我们先考虑欧式变换中的旋转变换：
+
+我们设某个单位正交基$(e_1,e_2,e_3)$，经过一次旋转之后，变成了$(e_1^\prime,e_2^\prime,e_3^\prime)$，那么对于同一个向量$a$，在两个坐标系下有不同的坐标：
+
+\begin{equation}
+    \begin{bmatrix}
+        e_1 & e_2 & e_3
+       \end{bmatrix}
+       \begin{bmatrix}
+        a_1\\
+        a_2\\
+        a_3
+       \end{bmatrix}
+       =
+       \begin{bmatrix}
+        e_1^\prime & e_2^\prime  & e_3^\prime 
+       \end{bmatrix}
+       \begin{bmatrix}
+        a_1^\prime \\
+        a_2^\prime \\
+        a_3^\prime 
+        \end{bmatrix}
+\end{equation}
+
+等式两边同时左乘$\begin{bmatrix}
+    e_1^T\\
+    e_2^T\\
+    e_3^T
+   \end{bmatrix}$，则左边的系数变成了单位阵，因此得到了两个坐标系的旋转关系：
+
+\begin{equation}
+    \begin{bmatrix}
+        a_1\\
+        a_2\\
+        a_3
+       \end{bmatrix}
+       =
+       \begin{bmatrix}
+        e_1^Te_1^\prime & e_1^Te_2^\prime & e_1^Te_3^\prime\\
+        e_2^Te_1^\prime & e_2^Te_2^\prime & e_2^Te_3^\prime\\
+        e_3^Te_1^\prime & e_2^Te_2^\prime & e_3^Te_3^\prime
+       \end{bmatrix}
+       \begin{bmatrix}
+        a_1\prime \\
+        a_2\prime \\
+        a_3\prime 
+       \end{bmatrix}
+       =
+       Ra^\prime 
+\end{equation}
+
+我们把中间的矩阵拿出来，定义成一个矩阵 $R$ ，它描述了旋转本身，又称为旋转矩阵，是由两组基之间的内积组成的。而且它是一个行列式为1的正交矩阵（矩阵的转置等于矩阵的逆）。它的逆（亦即转置）描述了一个相反的的旋转。
+
+接下来，加入欧式变换中的平移部分：
+
+平移可以简单地用一个平移向量 $t$ 来表示，则欧式变换后的坐标为：
+
+\begin{equation}
+    a^\prime = Ra + t
+\end{equation}
+
+因此我们可以用一个旋转矩阵$R$和一个平移向量$t$完整地描述一个欧氏空间地坐标变换。
+
+\subsubsection{变换矩阵与齐次坐标}
+
+上面我们已经可以完整地表达欧氏空间地旋转和平移了，但是这里的变换并不是线性的，如果进行两次变换，则会得到下面的结果：
+
+\begin{equation}
+    c = R_2(R_1a+t_1)+t_2
+\end{equation}
+
+这样的形式在变换多次之后会变得非常复杂，因此我们需要引入齐次坐标，并将变换矩阵重写为：
+
+\begin{equation}
+    \begin{bmatrix}
+        a^\prime \\
+        1
+       \end{bmatrix}
+       =
+       \begin{bmatrix}
+        R & t\\
+        0^T & 1
+       \end{bmatrix}
+       \begin{bmatrix}
+        a\\
+        1
+       \end{bmatrix}
+       =
+       T
+       \begin{bmatrix}
+        a\\
+        1
+       \end{bmatrix}
+\end{equation}
+
+这里的矩阵T我们称为变换矩阵。
+
+这其实是一个数学的技巧：我们在一个三维向量的末尾添加一个1，将其变为四维向量，称为齐次变换。对于四维向量，我们可以把旋转和平移写在一个变换矩阵中，从而使得整个关系变为线性关系。
+
+变换矩阵的反向变换：
+
+\begin{equation}
+    T^{-1} =
+    \begin{bmatrix}
+        R^T & -R^Tt\\
+        0^T & 1
+    \end{bmatrix}
+\end{equation}
+
+\subsubsection{旋转向量}
+
+我们容易想到，一个旋转只有三个自由度，一个三维刚体运动（包括旋转和平移）有六个自由度，但是对应的旋转矩阵有9个量，变换矩阵有16个量，很明显旋转矩阵和变换矩阵对于刚体运动的描述是冗余的，那么有没有紧凑的描述方式呢？
+
+联系前面关于向量外积部分的说明，我们知道任意的旋转都可以用一个旋转轴和一个旋转角来刻画。因此我们想到，可以使用一个向量，其方向与旋转轴一致，长度等于旋转角，这样的向量一般称为旋转向量。这样的话，我们只需要一个三维的向量就可以描述旋转，再加上一个三维的平移向量，一次变换我们正好可以用一个六维的向量来描述。
+
+这里不过多介绍旋转向量的问题，旋转向量在李代数的相关知识中会有讲解。我们介绍一下旋转向量和旋转矩阵之间的转换关系：
+
+假设有一个旋转轴为$n$，旋转角度为$\theta$的旋转，旋转向量到旋转矩阵的转换由罗德里格斯公式(Rodrigues's Formula)可以得到：
+
+\begin{equation}
+    R = cos\theta I + (1-cos\theta)nn^T + sin\theta n^{\wedge}
+\end{equation}
+
+符号$\wedge$是向量到反对称矩阵的转换符。
+
+旋转矩阵到旋转向量的转换：
+
+对于转角$\theta$：
+\begin{equation}
+    \begin{aligned} % 公式对齐工具
+        tr(R) &= cos\theta tr(I) + (1-cos\theta)tr(nn^T) + sin\theta tr(n^\wedge)\\
+            &= 3cos\theta + (1-cos\theta)\\
+            &= 1 + 2cos\theta
+    \end{aligned}
+\end{equation}
+
+因此有：
+
+\begin{equation}
+    \theta = arccos(\frac{tr(R)-1}{2}) 
+\end{equation}
+
+对于转轴$n$：
+
 
 
 \subsection{导航框架}
