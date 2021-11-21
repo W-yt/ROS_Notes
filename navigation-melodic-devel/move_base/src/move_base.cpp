@@ -48,52 +48,76 @@
 
 namespace move_base {
 
+  //MoveBase类的构造函数
   MoveBase::MoveBase(tf2_ros::Buffer& tf) :
     tf_(tf),
     as_(NULL),
     planner_costmap_ros_(NULL), controller_costmap_ros_(NULL),
+    //加载了baseGlobalPlanner的类库
     bgp_loader_("nav_core", "nav_core::BaseGlobalPlanner"),
+    //加载了baseLocalPlanner的类库
     blp_loader_("nav_core", "nav_core::BaseLocalPlanner"),
+    //加载了recoveryBehaviour的类库
     recovery_loader_("nav_core", "nav_core::RecoveryBehavior"),
     planner_plan_(NULL), latest_plan_(NULL), controller_plan_(NULL),
     runPlanner_(false), setup_(false), p_freq_change_(false), c_freq_change_(false), new_global_plan_(false) {
+    //一直到这里都是构造函数的初始化列表（从冒号开始）
 
+    //新建Action服务器，绑定回调函数MoveBase::executeCb，这个函数是move_base的核心
+    //as_指向action服务器，当执行as_->start()时调用MoveBase::executeCb函数
     as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBase::executeCb, this, _1), false);
 
+    //这两个句柄有什么区别吗？
     ros::NodeHandle private_nh("~");
     ros::NodeHandle nh;
 
     recovery_trigger_ = PLANNING_R;
 
     //get some parameters that will be global to the move base node
+    //从参数服务器加载用户输入的参数，如果没有，设置为默认值（第三个参数）
     std::string global_planner, local_planner;
+    //设置全局规划器的插件名称，默认navfn/NavfnROS
     private_nh.param("base_global_planner", global_planner, std::string("navfn/NavfnROS"));
+    //设置局部规划器的插件名称，默认TrajectoryPlannerROS
     private_nh.param("base_local_planner", local_planner, std::string("base_local_planner/TrajectoryPlannerROS"));
+    //robot_base_frame，默认base_link
     private_nh.param("global_costmap/robot_base_frame", robot_base_frame_, std::string("base_link"));
+    //global_frame，默认/map坐标系
     private_nh.param("global_costmap/global_frame", global_frame_, std::string("map"));
+    //全局路径规划器的循环速率 设置为0.0表示当收到新目标点或者局部路径规划器上报路径不通时 全局路径规划器才会启动（？）
     private_nh.param("planner_frequency", planner_frequency_, 0.0);
+    //发布底盘控制命令的控制频率
     private_nh.param("controller_frequency", controller_frequency_, 20.0);
+    //空间清理操作（？）执行前 路径规划器等待有效规划的时间
     private_nh.param("planner_patience", planner_patience_, 5.0);
+    //空间清理操作（？）执行前 控制器等待有效控制命令的时间
     private_nh.param("controller_patience", controller_patience_, 15.0);
-    private_nh.param("max_planning_retries", max_planning_retries_, -1);  // disabled by default
-
+    //恢复操作（？）之前尝试规划的次数 -1表示无上限地不断尝试
+    private_nh.param("max_planning_retries", max_planning_retries_, -1);
+    //执行恢复操作之前允许的震荡时间 0表示永远不超时
     private_nh.param("oscillation_timeout", oscillation_timeout_, 0.0);
+    //机器人需要移动该距离才可认为没有震荡 移动完毕后重置定时器参数oscillation_timeout
     private_nh.param("oscillation_distance", oscillation_distance_, 0.5);
 
     // parameters of make_plan service
     private_nh.param("make_plan_clear_costmap", make_plan_clear_costmap_, true);
     private_nh.param("make_plan_add_unreachable_goal", make_plan_add_unreachable_goal_, true);
 
-    //set up plan triple buffer
+    //初始化三个plan的“缓冲池”数组
+    //geometry_msgs::PoseStamped is A Pose with reference coordinate frame and timestamp
+    //其中的pose是一个三维的点表示位置，一个四元数表示姿态
+    //也就说，plan的结果其实就是这种类型（geometry_msgs::PoseStamped）的数据，即位姿
     planner_plan_ = new std::vector<geometry_msgs::PoseStamped>();
     latest_plan_ = new std::vector<geometry_msgs::PoseStamped>();
     controller_plan_ = new std::vector<geometry_msgs::PoseStamped>();
 
-    //set up the planner's thread
+    //planner_thread_线程所绑定的planThread函数是move_base的又一个重点，即全局规划线程
+    //创建规划器线程，在该线程里运行planThread函数
     planner_thread_ = new boost::thread(boost::bind(&MoveBase::planThread, this));
 
-    //for commanding the base
+    //发布速度话题
     vel_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    //发布即时目标话题
     current_goal_pub_ = private_nh.advertise<geometry_msgs::PoseStamped>("current_goal", 0 );
 
     ros::NodeHandle action_nh("move_base");
@@ -280,72 +304,7 @@ namespace move_base {
 
     action_goal_pub_.publish(action_goal);
   }
-
-  void MoveBase::clearCostmapWindows(double size_x, double size_y){
-    geometry_msgs::PoseStamped global_pose;
-
-    //clear the planner's costmap
-    getRobotPose(global_pose, planner_costmap_ros_);
-
-    std::vector<geometry_msgs::Point> clear_poly;
-    double x = global_pose.pose.position.x;
-    double y = global_pose.pose.position.y;
-    geometry_msgs::Point pt;
-
-    pt.x = x - size_x / 2;
-    pt.y = y - size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x + size_x / 2;
-    pt.y = y - size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x + size_x / 2;
-    pt.y = y + size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x - size_x / 2;
-    pt.y = y + size_y / 2;
-    clear_poly.push_back(pt);
-
-    planner_costmap_ros_->getCostmap()->setConvexPolygonCost(clear_poly, costmap_2d::FREE_SPACE);
-
-    //clear the controller's costmap
-    getRobotPose(global_pose, controller_costmap_ros_);
-
-    clear_poly.clear();
-    x = global_pose.pose.position.x;
-    y = global_pose.pose.position.y;
-
-    pt.x = x - size_x / 2;
-    pt.y = y - size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x + size_x / 2;
-    pt.y = y - size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x + size_x / 2;
-    pt.y = y + size_y / 2;
-    clear_poly.push_back(pt);
-
-    pt.x = x - size_x / 2;
-    pt.y = y + size_y / 2;
-    clear_poly.push_back(pt);
-
-    controller_costmap_ros_->getCostmap()->setConvexPolygonCost(clear_poly, costmap_2d::FREE_SPACE);
-  }
-
-  bool MoveBase::clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp){
-    //clear the costmaps
-    boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock_controller(*(controller_costmap_ros_->getCostmap()->getMutex()));
-    controller_costmap_ros_->resetLayers();
-
-    boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock_planner(*(planner_costmap_ros_->getCostmap()->getMutex()));
-    planner_costmap_ros_->resetLayers();
-    return true;
-  }
-
+私有域名比起直接调用一个带有私有
 
   bool MoveBase::planService(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &resp){
     if(as_->isActive()){
