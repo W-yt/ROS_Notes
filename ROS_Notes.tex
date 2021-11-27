@@ -2831,28 +2831,28 @@ move\_base\_node.cpp文件中，完成了$move\_base\_node$节点的初始化、
 
 核心函数：
 \begin{itemize}
-    \item [-] 构造函数 MoveBase::MoveBase 
-    \item [-] 控制主体(回调函数) MoveBase::executeCb
-    \item [-] 全局规划线程 MoveBase::planThread
-    \item [-] 全局规划函数 MoveBase::makePlan
-    \item [-] 局部规划函数 MoveBase::executeCycle
-    \item [-] 析构函数 MoveBase::~MoveBase
+    \item [-] \textbf{构造函数}——MoveBase::MoveBase 
+    \item [-] \textbf{控制主体(回调函数)}——MoveBase::executeCb
+    \item [-] \textbf{全局规划线程}——MoveBase::planThread
+    \item [-] \textbf{全局规划函数}——MoveBase::makePlan
+    \item [-] \textbf{局部规划函数}——MoveBase::executeCycle
+    \item [-] \textbf{析构函数}——MoveBase::~MoveBase
 \end{itemize}
     
 其他函数：
 \begin{itemize}
-    \item [-] 动态加载配置参数 MoveBase::reconfigureCB
-    \item [-] 仿真时发布目标函数 MoveBase::goalCB
-    \item [-] 可以自动搜索终点附近可达到点的路径规划服务 MoveBase::planService
-    \item [-] 发布零速度 MoveBase::publishZeroVelocity
-    \item [-] 检查四元数合法性函数 MoveBase::isQuaternionValid
-    \item [-] 将目标点转换到全局坐标系下 MoveBase::goalToGlobalFrame
-    \item [-] 唤醒路径规划线程 MoveBase::wakePlanner
-    \item [-] 获取两点之间的水平路径 MoveBase::distance
-    \item [-] 加载恢复行为插件 MoveBase::loadRecoveryBehaviors
-    \item [-] 加载默认恢复行为插件 MoveBase::loadDefaultRecoveryBehaviors
-    \item [-] 路劲规划系统复位 MoveBase::resetState
-    \item [-] 获取在指定代价地图下的位姿 MoveBase::getRobotPose
+    \item [-] \textbf{动态加载配置参数}——MoveBase::reconfigureCB
+    \item [-] \textbf{仿真时发布目标函数}——MoveBase::goalCB
+    \item [-] \textbf{可以自动搜索终点附近可达到点的路径规划服务}——MoveBase::planService
+    \item [-] \textbf{发布零速度}——MoveBase::publishZeroVelocity
+    \item [-] \textbf{检查四元数合法性函数}——MoveBase::isQuaternionValid
+    \item [-] \textbf{将目标点转换到全局坐标系下}——MoveBase::goalToGlobalFrame
+    \item [-] \textbf{唤醒路径规划线程}——MoveBase::wakePlanner
+    \item [-] \textbf{获取两点之间的水平路径}——MoveBase::distance
+    \item [-] \textbf{加载恢复行为插件}——MoveBase::loadRecoveryBehaviors
+    \item [-] \textbf{加载默认恢复行为插件}——MoveBase::loadDefaultRecoveryBehaviors
+    \item [-] \textbf{路劲规划系统复位}——MoveBase::resetState
+    \item [-] \textbf{获取在指定代价地图下的位姿}——MoveBase::getRobotPose
 \end{itemize}
 
 \subsubsection{MoveBase::MoveBase()}
@@ -2863,7 +2863,8 @@ $MoveBase$类的构造函数，获取服务器上的参数值，初始化规划�
 
 \begin{verbatim}
     //as_指向action服务器，当执行as_->start()时调用MoveBase::executeCb函数
-    as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBase::executeCb, this, _1), false);
+    as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&Move
+Base::executeCb, this, _1), false);
 \end{verbatim}
 
 初始化plan的缓冲池：
@@ -2881,6 +2882,7 @@ $MoveBase$类的构造函数，获取服务器上的参数值，初始化规划�
 
 规划器用到的地图实质上是Costmap2DROS类的实例，这个类是ROS对costmap的封装。
 
+\footnotesize
 \begin{verbatim}
     //创建全局规划器的代价地图
     planner_costmap_ros_ = new costmap_2d::Costmap2DROS("global_costmap", tf_);
@@ -2888,11 +2890,12 @@ $MoveBase$类的构造函数，获取服务器上的参数值，初始化规划�
 
     //初始化全局规划器，planner_指针
     try {
-      planner_ = bgp_loader_.createInstance(global_planner);
-      planner_->initialize(bgp_loader_.getName(global_planner), planner_costmap_ros_);
+        planner_ = bgp_loader_.createInstance(global_planner);
+        planner_->initialize(bgp_loader_.getName(global_planner), planner_costmap_ros_);
     } catch (const pluginlib::PluginlibException& ex) {
-      ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", global_planner.c_str(), ex.what());
-      exit(1);
+        ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the 
+    containing library is built? Exception: %s", global_planner.c_str(), ex.what());
+        exit(1);
     }
 
     //创建本地规划器的代价地图
@@ -2901,14 +2904,16 @@ $MoveBase$类的构造函数，获取服务器上的参数值，初始化规划�
 
     //创建本地规划器，tc_指针
     try {
-      tc_ = blp_loader_.createInstance(local_planner);
-      ROS_INFO("Created local_planner %s", local_planner.c_str());
-      tc_->initialize(blp_loader_.getName(local_planner), &tf_, controller_costmap_ros_);
+        tc_ = blp_loader_.createInstance(local_planner);
+        ROS_INFO("Created local_planner %s", local_planner.c_str());
+        tc_->initialize(blp_loader_.getName(local_planner), &tf_, controller_costmap_ros_);
     } catch (const pluginlib::PluginlibException& ex) {
-      ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", local_planner.c_str(), ex.what());
-      exit(1);
+        ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the 
+    containing library is built? Exception: %s", local_planner.c_str(), ex.what());
+        exit(1);
     }
 \end{verbatim}
+\normalsize
 
 开始动态更新代价地图：
 
@@ -2931,7 +2936,8 @@ $executeCb$是$Action$的回调函数，它是$MoveBase$控制流的主体，调
 
 \begin{verbatim}
     boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
-    //用接收到的目标goal来更新全局规划目标（全局变量），它在planThread中会被用来做全局规划的当前目标
+    //用接收到的目标goal来更新全局规划目标（全局变量），它在planThread中会被用来做全
+局规划的当前目标
     planner_goal_ = goal;
     runPlanner_ = true;
     //开始全局规划并于此处阻塞
@@ -2952,6 +2958,7 @@ $executeCb$是$Action$的回调函数，它是$MoveBase$控制流的主体，调
 
 如果服务器未被抢占，或被抢占的if结构已执行完毕，接下来开始局部规划。代码如下：
 
+\footnotesize
 \begin{verbatim}
     if(as_->isPreemptRequested()){
         //如果是 局部规划进行过程中收到新的目标
@@ -2983,6 +2990,7 @@ $executeCb$是$Action$的回调函数，它是$MoveBase$控制流的主体，调
     //调用executeCycle函数进行局部规划，传入目标和全局规划路线
     bool done = executeCycle(goal, global_plan);
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::planThread()}
 
@@ -2990,6 +2998,7 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
 
 循环等待$executeCB$函数中的唤醒操作：
 
+\footnotesize
 \begin{verbatim}
     while(wait_for_wake || !runPlanner_){
         //if we should not be running the planner then suspend this thread
@@ -2999,9 +3008,11 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
         wait_for_wake = false;
     }
 \end{verbatim}
+\normalsize
 
 被唤醒后，调用$makePlan$函数，进行全局规划：
 
+\footnotesize
 \begin{verbatim}
     ros::Time start_time = ros::Time::now();
 
@@ -3016,11 +3027,13 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
     //调用MoveBase类的makePlan函数，如果成功为临时目标制定全局规划planner_plan_，则返回true
     bool gotPlan = n.ok() && makePlan(temp_goal, *planner_plan_);
 \end{verbatim}
+\normalsize
 
 若全局规划成功，则交换$planner\_plan\_$和$latest\_plan$的值，即令$latest\_plan$中存储的是本次全局规划的结果（最新），$planner\_plan\_$中存储的是上次全局规划的结果（次新）。设置标志位$new\_global\_plan\_ = true$，表示得到了新的全局规划路线，并设置$Movebase$状态标志位$state\_$为$CONTROLLING$，即全局规划完成，开始进行局部控制。
 
 如果全局规划失败，$MoveBase$还在$PLANNING$状态，即机器人没有移动，则进入自转模式。
 
+\footnotesize
 \begin{verbatim}
     if(gotPlan){
         ROS_DEBUG_NAMED("move_base_plan_thread","Got Plan with %zu points!", planner_plan_->size());
@@ -3052,7 +3065,8 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
         //检查时间和次数是否超过限制，若其中一项不满足限制，停止全局规划
         lock.lock();
         planning_retries_++;
-        if(runPlanner_ && (ros::Time::now() > attempt_end || planning_retries_ > uint32_t(max_planning_retries_))){
+        if(runPlanner_ && (ros::Time::now() > attempt_end || planning_retries_ > uint32_t(max_planning_
+    retries_))){
             state_ = CLEARING;
             runPlanner_ = false;
             publishZeroVelocity();
@@ -3061,6 +3075,7 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
         lock.unlock();
     }
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::makePlan()}
 
@@ -3068,13 +3083,16 @@ $planThread()$的核心是调用$makePlan$函数，该函数中实际进行全�
 
 先进行一些预备工作，如检查全局代价地图、起始位姿，然后将起始位姿的数据格式做转换。接下来是实际进行全局规划的函数，调用全局规划器的$makePlan$函数$planner\_->makePlan(start, goal, plan)$，传入机器人当前位姿和目标，得到$plan$，若规划失败或得到的$plan$为空，返回$false$，否则返回$true$。
 
+\footnotesize
 \begin{verbatim}
     const geometry_msgs::PoseStamped& start = global_pose;
     if(!planner_->makePlan(start, goal, plan) || plan.empty()){
-        ROS_DEBUG_NAMED("move_base","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x, goal.pose.position.y);
+        ROS_DEBUG_NAMED("move_base","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x
+    , goal.pose.position.y);
         return false;
     }
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::executeCycle()}
 
@@ -3082,6 +3100,7 @@ $executeCycle$函数的作用是进行局部规划。
 
 通过标志位$new\_global\_plan\_$判断全局规划是否得到了新的路线。如果获得了新的路线，则通过指针交换，将$latest\_plan\_$（最新的全局规划结果）的值传递给$controller\_plan\_$即局部规划使用，然后将上一次的局部规划路线传递给$latest\_plan$。进而在实例$tc\_$上调用局部规划器$BaseLocalPlanner$的类函数$setPlan()$，把全局规划的结果传递给局部规划器。代码如下：
 
+\footnotesize
 \begin{verbatim}
     if(new_global_plan_){
         new_global_plan_ = false;
@@ -3104,12 +3123,14 @@ $executeCycle$函数的作用是进行局部规划。
             runPlanner_ = false;
             lock.unlock();
 
-            as_->setAborted(move_base_msgs::MoveBaseResult(), "Failed to pass global plan to the controller.");
+            as_->setAborted(move_base_msgs::MoveBaseResult(), "Failed to pass global plan to the control
+        ler.");
             return true;
         }
         ......
     }
 \end{verbatim}
+\normalsize
 
 接下来对$MoveBase$状态进行判断，可能会有以下几种结果：
 
@@ -3121,6 +3142,7 @@ $executeCycle$函数的作用是进行局部规划。
 
 接下来分别解析这三种情况下的处理操作，若$status\_=PLANNING$：
 
+\footnotesize
 \begin{verbatim}
     //PLANNING：全局规划还没完成，还没得到一个全局路线，那么唤醒一个全局规划线程去制定全局路线
     case PLANNING:
@@ -3132,6 +3154,7 @@ $executeCycle$函数的作用是进行局部规划。
       ROS_DEBUG_NAMED("move_base","Waiting for plan, in the planning state.");
       break;
 \end{verbatim}
+\normalsize
 
 若$status\_=CONTROLLING$：
 
@@ -3143,6 +3166,7 @@ $executeCycle$函数的作用是进行局部规划。
     \item 如果没到终点，且状态正常，调用局部规划器实例$tc\_->computeVelocityCommands(cmd\_vel)$函数，它根据结合传入的全局规划路线和其他因素计算得出局部规划结果，即速度指令，存放在cmd\_vel中，将其发布，控制机器人运行。
 \end{itemize}
 
+\footnotesize
 \begin{verbatim}
     //CONTROLLING：全局规划成功，得到全局路线，这里进行真正的局部规划：
     case CONTROLLING:
@@ -3162,19 +3186,21 @@ $executeCycle$函数的作用是进行局部规划。
         }
 
         //如果机器人被困住，则进入恢复行为
-        if(oscillation_timeout_ > 0.0 &&
-            last_oscillation_reset_ + ros::Duration(oscillation_timeout_) < ros::Time::now()){
+        if(oscillation_timeout_ > 0.0 && last_oscillation_reset_ + ros::Duration(oscillation_timeout_) <
+    ros::Time::now()){
             publishZeroVelocity();
             state_ = CLEARING;
             recovery_trigger_ = OSCILLATION_R;
         }
 
         {//如果没到终点 且状态正常
-            boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(controller_costmap_ros_->getCostmap()->getMutex()));
+            boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(controller_costmap_ros_->getCostma
+        p()->getMutex()));
 
             //局部规划器实例tc_被传入了全局规划后，调用computeVelocityCommands函数计算速度存储在cmd_vel中
             if(tc_->computeVelocityCommands(cmd_vel)){
-                ROS_DEBUG_NAMED( "move_base", "Got a valid command from the local planner: %.3lf, %.3lf, %.3lf", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z );
+                ROS_DEBUG_NAMED( "move_base", "Got a valid command from the local planner: %.3lf, %.3lf
+            , %.3lf", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z );
                 //若成功计算速度，则说明本次局部规划成功， 将上一次有效局部控制的时间设为当前时间
                 last_valid_control_ = ros::Time::now();
                 //向底盘发送速度控制消息，一个循环只发一次速度命令
@@ -3213,15 +3239,18 @@ $executeCycle$函数的作用是进行局部规划。
         }
     break;
 \end{verbatim}
+\normalsize
 
 若$status\_=CLEARING$：
 
+\footnotesize
 \begin{verbatim}
     case CLEARING:
         ROS_DEBUG_NAMED("move_base","In clearing/recovery state");
         //如果允许使用恢复行为，且恢复行为索引值小于恢复行为数组的大小
         if(recovery_behavior_enabled_ && recovery_index_ < recovery_behaviors_.size()){
-            ROS_DEBUG_NAMED("move_base_recovery","Executing behavior %u of %zu", recovery_index_+1, recovery_behaviors_.size());
+            ROS_DEBUG_NAMED("move_base_recovery","Executing behavior %u of %zu", recovery_index_+1, reco
+        very_behaviors_.size());
 
             move_base_msgs::RecoveryStatus msg;
             msg.pose_stamped = current_position;
@@ -3265,6 +3294,7 @@ $executeCycle$函数的作用是进行局部规划。
         }
     break;
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::reconfigureCB}
 
@@ -3282,6 +3312,7 @@ $executeCycle$函数的作用是进行局部规划。
 
 如果在中途切换全局规划器$base\_global\_planner$插件，则需要进行一些过渡过程（切换局部规划器插件同理）：
 
+\footnotesize
 \begin{verbatim}
     //全局规划器改变
     if(config.base_global_planner != last_config_.base_global_planner) {
@@ -3304,13 +3335,15 @@ $executeCycle$函数的作用是进行局部规划。
 
             lock.unlock();
         } catch (const pluginlib::PluginlibException& ex) {
-            ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", config.base_global_planner.c_str(), ex.what());
+            ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that 
+        the containing library is built? Exception: %s", config.base_global_planner.c_str(), ex.what());
             //如果切换过程中出现问题了，就退回之前的规划器
             planner_ = old_planner;
             config.base_global_planner = last_config_.base_global_planner;
         }
     }
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::planService}
 
@@ -3318,11 +3351,13 @@ $executeCycle$函数的作用是进行局部规划。
 
 一般需要使用者没有指定一个机器人的起始位姿，如果没有指定（空的frame-id表示没有指定），则使用机器人的当前位姿：
 
+\footnotesize
 \begin{verbatim}
     if(req.start.header.frame_id.empty()){
         geometry_msgs::PoseStamped global_pose;
         if(!getRobotPose(global_pose, planner_costmap_ros_)){
-          ROS_ERROR("move_base cannot make a plan for you because it could not get the start pose of the robot");
+            ROS_ERROR("move_base cannot make a plan for you because it could not get the start pose of t
+        he robot");
           return false;
         }
         start = global_pose;
@@ -3332,68 +3367,73 @@ $executeCycle$函数的作用是进行局部规划。
         start = req.start;
     }
 \end{verbatim}
+\normalsize
 
 首先会尝试直接以使用者指定的目标点为终点进行路径规划，如果规划失败（$global\_plan$为空）,则在规定的误差范围内向外寻找可行的目标位置，算法会自动在允许的范围内逐渐扩大搜索的半径。并且当搜索到一个在目标附近的可达到的终点之后，可以选择（使用参数$make\_plan\_add\_unreachable\_goal\_$进行配置）将原本不可达到的目标点也放到$global\_plan$队列的末尾，因为有可能当我们达到其附近的可达到点之后，原本不可达到的目标点也可以达到了。
 
 实现算法如下：
 
+\scriptsize
 \begin{verbatim}
     //first try to make a plan to the exact desired goal
     std::vector<geometry_msgs::PoseStamped> global_plan;
     if(!planner_->makePlan(start, req.goal, global_plan) || global_plan.empty()){
-      ROS_DEBUG_NAMED("move_base","Failed to find a plan to exact goal of (%.2f, %.2f), searching for a feasible goal within tolerance", req.goal.pose.position.x, req.goal.pose.position.y);
+        ROS_DEBUG_NAMED("move_base","Failed to find a plan to exact goal of (%.2f, %.2f), searching for 
+    a feasible goal within tolerance", req.goal.pose.position.x, req.goal.pose.position.y);
 
-      //在规定的误差范围内向外寻找可行的目标位置
-      geometry_msgs::PoseStamped p;
-      p = req.goal;
-      bool found_legal = false;
-      float resolution = planner_costmap_ros_->getCostmap()->getResolution();
-      float search_increment = resolution*3.0;
-      if(req.tolerance > 0.0 && req.tolerance < search_increment) search_increment = req.tolerance;
-      //在允许的范围内逐渐扩大搜索的半径
-      for(float max_offset = search_increment; max_offset <= req.tolerance && !found_legal; max_offset += search_increment){
-        for(float y_offset = 0; y_offset <= max_offset && !found_legal; y_offset += search_increment) {
-          for(float x_offset = 0; x_offset <= max_offset && !found_legal; x_offset += search_increment) {
+        //在规定的误差范围内向外寻找可行的目标位置
+        geometry_msgs::PoseStamped p;
+        p = req.goal;
+        bool found_legal = false;
+        float resolution = planner_costmap_ros_->getCostmap()->getResolution();
+        float search_increment = resolution*3.0;
+        if(req.tolerance > 0.0 && req.tolerance < search_increment) 
+            search_increment = req.tolerance;
+        //在允许的范围内逐渐扩大搜索的半径
+        for(float max_offset = search_increment; max_offset <= req.tolerance && !found_legal; max_offset += search_incr
+    ement){
+            for(float y_offset = 0; y_offset <= max_offset && !found_legal; y_offset += search_increment) {
+                for(float x_offset = 0; x_offset <= max_offset && !found_legal; x_offset += search_increment) {
+                    //don't search again inside the current outer layer
+                    if(x_offset < max_offset-1e-9 && y_offset < max_offset-1e-9) 
+                        continue;
 
-            //don't search again inside the current outer layer
-            if(x_offset < max_offset-1e-9 && y_offset < max_offset-1e-9) continue;
+                    //search to both sides of the desired goal
+                    for(float y_mult = -1.0; y_mult <= 1.0 + 1e-9 && !found_legal; y_mult += 2.0) {
+                        //if one of the offsets is 0, -1*0 is still 0 (so get rid of one of the two)
+                        if(y_offset < 1e-9 && y_mult < -1.0 + 1e-9) 
+                            continue;
 
-            //search to both sides of the desired goal
-            for(float y_mult = -1.0; y_mult <= 1.0 + 1e-9 && !found_legal; y_mult += 2.0) {
+                        for(float x_mult = -1.0; x_mult <= 1.0 + 1e-9 && !found_legal; x_mult += 2.0) {
+                            if(x_offset < 1e-9 && x_mult < -1.0 + 1e-9) continue;
 
-              //if one of the offsets is 0, -1*0 is still 0 (so get rid of one of the two)
-              if(y_offset < 1e-9 && y_mult < -1.0 + 1e-9) continue;
+                            p.pose.position.y = req.goal.pose.position.y + y_offset * y_mult;
+                            p.pose.position.x = req.goal.pose.position.x + x_offset * x_mult;
 
-              for(float x_mult = -1.0; x_mult <= 1.0 + 1e-9 && !found_legal; x_mult += 2.0) {
-                if(x_offset < 1e-9 && x_mult < -1.0 + 1e-9) continue;
-
-                p.pose.position.y = req.goal.pose.position.y + y_offset * y_mult;
-                p.pose.position.x = req.goal.pose.position.x + x_offset * x_mult;
-
-                if(planner_->makePlan(start, p, global_plan)){
-                  if(!global_plan.empty()){
-                    //选择是否将原本不可达到的目标点也放到global_plan队列的末尾
-                    if (make_plan_add_unreachable_goal_) {
-                      //adding the (unreachable) original goal to the end of the global plan, in case the local planner can get you there
-                      //(the reachable goal should have been added by the global planner)
-                      global_plan.push_back(req.goal);
+                            if(planner_->makePlan(start, p, global_plan)){
+                                if(!global_plan.empty()){
+                                    //选择是否将原本不可达到的目标点也放到global_plan队列的末尾
+                                    if (make_plan_add_unreachable_goal_) {
+                                        global_plan.push_back(req.goal);
+                                    }
+                                    found_legal = true;
+                                    ROS_DEBUG_NAMED("move_base", "Found a plan to point (%.2f, %.2f)", p.pose.position.
+                                x, p.pose.position.y);
+                                    break;
+                                }
+                            }
+                            else{
+                                ROS_DEBUG_NAMED("move_base","Failed to find a plan to point (%.2f, %.2f)", p.pose.posit
+                            ion.x, p.pose.position.y);
+                            }
+                        }
                     }
-
-                    found_legal = true;
-                    ROS_DEBUG_NAMED("move_base", "Found a plan to point (%.2f, %.2f)", p.pose.position.x, p.pose.position.y);
-                    break;
-                  }
                 }
-                else{
-                  ROS_DEBUG_NAMED("move_base","Failed to find a plan to point (%.2f, %.2f)", p.pose.position.x, p.pose.position.y);
-                }
-              }
             }
-          }
         }
-      }
     }
 \end{verbatim}
+\normalsize
 
 \subsubsection{MoveBase::loadRecoveryBehaviors}
 
@@ -3421,6 +3461,825 @@ $Movebase$使用的全局规划器默认为$NavFn$，默认使用$Dijkstra$算�
 具体理解过程参照博客：
 
 \url{https://www.cnblogs.com/yutian-blogs/p/15605767.html}
+
+\subsection{源码相关文件}
+
+\begin{itemize}
+    \item 源码链接：
+    
+    \url{https://github.com/ros-planning/navigation/tree/melodic-devel}
+
+    \item 源码注释链接：
+    
+    \url{https://github.com/ros-planning/navigation/tree/noetic-devel/navfn}
+\end{itemize}
+
+对应源码中的相关文件：
+
+\begin{itemize}
+    \item navfn/src/navfn\_ros.cpp
+    \item navfn/src/navfn.cpp
+\end{itemize}
+
+\subsection{整体结构图}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1.0\linewidth]{image/navfn.png}
+% \end{figure}
+
+Movebase使用的全局规划器默认为NavFn，默认使用Dijkstra算法，在地图上的起始点和目标点间规划出一条最优路径，供局部规划器具体导航使用。NavFn的源码中实际上是有A*规划算法的函数的，但早期NavFn包中的A*有bug，没有处理，后来发布了global\_planner，在global\_planner包中修改好了A*的部分。
+
+navfn\_ros.cpp中定义了NavfnROS类，navfn.cpp中定义了NavFn类，ROS Navigation整个包的一个命名规则是，带有ROS后缀的类完成的是该子过程与整体和其他过程的衔接框架和数据流通，不带ROS后缀的类中完成该部分的实际工作，并作为带有ROS后缀的类的成员。
+
+\subsection{navfn\_ros.cpp}
+
+\subsubsection{函数列表}
+
+核心函数：
+\begin{itemize}
+    \item [-] \textbf{初始化函数}——NavfnROS::initialize
+    \item [-] \textbf{核心路径规划函数}——NavfnROS::makePlan
+    \item [-] \textbf{获取单点Pot值}——NavfnROS::getPointPotential
+    \item [-] \textbf{获取路径规划结果}——NavfnROS::getPlanFromPotential
+\end{itemize}
+    
+\subsubsection{NavfnROS::initialize}
+
+主要进行参数的初始化以及成员类NavFn的初始化。
+
+其中对于成员类NavFn的初始化代码如下：
+
+\small
+\begin{verbatim}
+    //对成员类NavFn初始化，这个类将完成全局规划实际计算
+    //planner_指向NavFn类实例，传入参数为 costmap_ 地图大小
+    planner_ = boost::shared_ptr<NavFn>(new NavFn(costmap_->getSizeInCellsX(), costmap_->getSi
+zeInCellsY()));
+\end{verbatim}
+\normalsize
+
+\subsubsection{NavfnROS::makePlan}
+
+$makePlan$是在$Movebase$中对全局规划器调用的函数，它是$NavfnROS$类的重点函数，负责调用包括Navfn类成员在内的函数完成实际计算，控制着全局规划的整个流程。它的输入中最重要的是当前和目标的位置。
+
+准备工作：规划前先清理$plan$，等待$tf$，存储当前起点位置并转换到地图坐标系，并将全局$costmap$上起点的$cell$设置为$FREE\_SPACE$。
+
+接下来，调用$NavFn$类的$setNavArr$函数：给定地图的大小，创建$costarr$数组、$potarr$数组以及$x$和$y$向的梯度数组），这三个数组构成$NavFn$类用$Dijkstra$计算的主干。
+
+其各自的作用为：
+
+\begin{itemize}
+    \item $costarr$数组：记录全局$costmap$信息
+    \item $potarr$数组：储存各$cell$的$Potential$值
+    \item $x$和$y$向的梯度数组($grad$x和$grady$)：记录各个$cell$的梯度值用于生成路径
+\end{itemize}
+
+另外，调用$setCostmap$函数将$costmap$翻译成$costarr$，根据代价值$cost$生成无向权重图，该部分代码如下：
+
+\begin{verbatim}
+    planner_->setNavArr(costmap_->getSizeInCellsX(), costmap_->getSizeInCellsY());
+    planner_->setCostmap(costmap_->getCharMap(), true, allow_unknown_);
+\end{verbatim}
+
+接下来将设置$NavFn$类的起点和目标位置，这里要注意的是设置$NavFn$类的终点和起点时，起点和终点是反着设置的，导致$Navfn$类和$NavfnROS$类的起点和终点是反着的。(这应该不是失误，而是$Navfn$类在进行具体传播规划过程中反着来更方便理解)
+
+然后调用该类的$calcNavFnDijkstra$函数，这个函数可以完成全局路径的计算，这部分代码如下：
+
+\begin{verbatim}
+    //设置NavFn类的终点和起点
+    planner_->setStart(map_goal);
+    planner_->setGoal(map_start);
+
+    planner_->calcNavFnDijkstra(true);
+\end{verbatim}
+
+接下来，在目标位置附近$2*tolerance$的矩形范围内，寻找与目标位置最近的、且不是障碍物的$cell$，作为全局路径实际的终点，这里调用了类内$getPointPotential$函数，目的是获取单点$Potential$值，与$DBL\_MAX$比较，确定是否是障碍物。其中，$resolution$是搜索的分辨率（也就是代价地图的分辨率）。代码如下：
+
+\begin{verbatim}
+    double resolution = costmap_->getResolution();
+    geometry_msgs::PoseStamped p, best_pose;
+    p = goal;
+
+    bool found_legal = false;
+    double best_sdist = DBL_MAX;
+
+    p.pose.position.y = goal.pose.position.y - tolerance;
+
+    while(p.pose.position.y <= goal.pose.position.y + tolerance){
+        p.pose.position.x = goal.pose.position.x - tolerance;
+        while(p.pose.position.x <= goal.pose.position.x + tolerance){
+            double potential = getPointPotential(p.pose.position);
+            double sdist = sq_distance(p, goal);
+            if(potential < POT_HIGH && sdist < best_sdist){
+                best_sdist = sdist;
+                best_pose = p;
+                found_legal = true;
+            }
+            p.pose.position.x += resolution;
+        }
+        p.pose.position.y += resolution;
+    }
+\end{verbatim}
+
+若成功找到实际终点$best\_pose$，调用类内$getPlanFromPotential$函数，将$best\_pose$传递给$NavFn$，获得最终$Plan$并发布，这是最终正式的路径规划，代码如下：
+
+\footnotesize
+\begin{verbatim}
+    //若成功找到实际终点best_pose
+    if(found_legal){
+        if(getPlanFromPotential(best_pose, plan)){
+            //make sure the goal we push on has the same timestamp as the rest of the plan
+            geometry_msgs::PoseStamped goal_copy = best_pose;
+            goal_copy.header.stamp = ros::Time::now();
+            plan.push_back(goal_copy);
+        }
+        else{
+            ROS_ERROR("Failed to get a plan from potential when a legal potential was found. This should
+        n't happen.");
+        }
+    }
+\end{verbatim}
+\normalsize
+
+后面部分是$potarr$数组的发布，与主体关系不大，略过。
+
+\subsubsection{NavfnROS::getPointPotential}
+
+该函数在$makePlan$中被调用，主要工作是获取$potarr$数组记录的对应$cell$的$Potential$值。它首先将给定点转换到$map$坐标系下，然后计算其对应的$potarr$数组的索引，最后取出这个$cell$的$pot$值。代码如下：
+
+\begin{verbatim}
+    unsigned int mx, my;
+    if(!costmap_->worldToMap(world_point.x, world_point.y, mx, my))
+        return DBL_MAX;
+
+    unsigned int index = my * planner_->nx + mx;
+    return planner_->potarr[index];
+\end{verbatim}
+
+\subsubsection{NavfnROS::getPlanFromPotential}
+
+该函数在$makePlan$中被调用，主要工作是调用了$NavFn$类的一些函数，设置目标、获取规划结果。
+
+该函数中，将$makePlan$末尾处找到的$goal$附近的$best\_pose$坐标转换到地图坐标系，并通过调用的$setStart$函数传递(注意这里设置起点的时候也是反的哦)，作为路径的实际终点，再调用$calcPath$函数，完成路径计算。代码如下：
+
+\begin{verbatim}
+    //储存makePlan末尾处找到的goal附近的best_pose的坐标
+    double wx = goal.pose.position.x;
+    double wy = goal.pose.position.y;
+
+    //best_pose坐标转换到地图坐标系
+    unsigned int mx, my;
+    if(!costmap_->worldToMap(wx, wy, mx, my)){
+        ROS_WARN_THROTTLE(......);
+        return false;
+    }
+
+    int map_goal[2];
+    map_goal[0] = mx;
+    map_goal[1] = my;
+
+    //将best_pose设置为路径的实际终点
+    planner_->setStart(map_goal);
+    //调用NavFn类calcPath函数，完成路径计算
+    planner_->calcPath(costmap_->getSizeInCellsX() * 4);
+\end{verbatim}
+
+接下来，获取规划结果的坐标，填充$plan$之后将其发布：
+
+\begin{verbatim}
+    //获取规划结果的坐标，填充plan之后将其发布
+    float *x = planner_->getPathX();
+    float *y = planner_->getPathY();
+    int len = planner_->getPathLen();
+    ros::Time plan_time = ros::Time::now();
+
+    for(int i = len - 1; i >= 0; --i){
+        //convert the plan to world coordinates
+        double world_x, world_y;
+        mapToWorld(x[i], y[i], world_x, world_y);
+
+        //只规划了位置，没有姿态
+        geometry_msgs::PoseStamped pose;
+        pose.header.stamp = plan_time;
+        pose.header.frame_id = global_frame_;
+        pose.pose.position.x = world_x;
+        pose.pose.position.y = world_y;
+        pose.pose.position.z = 0.0;
+        pose.pose.orientation.x = 0.0;
+        pose.pose.orientation.y = 0.0;
+        pose.pose.orientation.z = 0.0;
+        pose.pose.orientation.w = 1.0;
+        plan.push_back(pose);
+    }
+
+    //publish the plan for visualization purposes
+    publishPlan(plan, 0.0, 1.0, 0.0, 0.0);
+\end{verbatim}
+
+\subsection{navfn.cpp}
+
+\subsubsection{函数列表}
+
+核心函数：
+\begin{itemize}
+    \item [-] \textbf{由costmap生成costarr数组}——NavFn::setCostmap
+    \item [-] \textbf{调用子函数完成Dijkstra路径计算总流程}——NavFn::calcNavFnDijkstra
+    \item [-] \textbf{处理costarr数组并初始化potarr、gradx、grady数组}——NavFn::setupNavFn
+    \item [-] \textbf{传播填充potarr数组}——NavFn::propNavFnDijkstra
+    \item [-] \textbf{更新单个cell的pot值}——NavFn::updateCell
+    \item [-] \textbf{梯度下降法生成路径}——NavFn::calcPath 
+    \item [-] \textbf{计算cell处的梯度值}——NavFn::gradCell
+\end{itemize}
+    
+其他函数：
+\begin{itemize}
+    \item [-] 
+\end{itemize}
+
+\subsubsection{NavFn::setCostmap}
+
+该函数将$costmap$翻译成$costarr$，根据代价值$cost$生成无向权重图。
+
+在这个过程中，将$cell$分为四种情况进行处理：
+\begin{itemize}
+    \item 若当前$cell$在$costmap$上的值$<COST\_OB\S_ROS(253)$，即非致命障碍物（障碍物附近），重新将其赋值为$COST\_NEUTRAL(50)+$当前$cell$在$costmap$上的值$×0.8$。作用为：将原本$[0~253]$范围的数值变换到$[50~253]$范围；
+    \item 若当前$cell$在$costmap$上的值$== COST\_OBS(254)$，即致命障碍物（障碍物本身），值仍为254；
+    \item 若当前$cell$在$costmap$上的值$== COST\_UNKNOWN\_ROS(255)$，即未知区域，赋值为253。
+\end{itemize}
+
+该部分代码如下：
+
+\small
+\begin{verbatim}
+    if (isROS){
+        //在地图的长宽范围内进行迭代
+        for (int i=0; i<ny; i++){
+            //k值记录二重迭代的次数
+            int k = i*nx;
+            for (int j=0; j<nx; j++, k++, cmap++, cm++){
+                //最小权重值为COST_NEUTRAL＝50(无障碍物的free栅格)
+                //最大权重值为COST_OBS＝254(致命障碍被禁止的栅格)
+                //次大权重值为COST_OBS_ROS＝253(膨胀型障碍的栅格)
+                //未知权重值未COST_UNKNOWN_ROS=255(未知权重的栅格)
+                *cm = COST_OBS;
+                int v = *cmap;
+                //若当前cell在costmap上的值 < COST_OBS_ROS(253)，即非膨胀型障碍
+                if (v < COST_OBS_ROS){
+                    //重新将其赋值为COST_NEUTRAL(50)+当前cell在costmap上的值×比例0.8（最高253）
+                    //将原本[0~253]范围的数值变换到[50~253]范围
+                    v = COST_NEUTRAL + COST_FACTOR*v;
+                    //数值限制 防止将非膨胀型障碍赋值大于253 
+                    if (v >= COST_OBS)
+                    v = COST_OBS-1;
+                    //赋值给当前全局规划要使用的地图costarr
+                    *cm = v;
+                }
+                //若当前cell的值为COST_UNKNOWN_ROS(255)，未知区域
+                else if(v == COST_UNKNOWN_ROS && allow_unknown){
+                    //统一设置为253（膨胀型障碍）
+                    v = COST_OBS-1;
+                    *cm = v;
+                }
+            }
+        }
+    }
+\end{verbatim}
+\normalsize
+
+如果地图不是$ROS map$，可能是$PGM$地图，同样进行类似的翻译。
+
+\subsubsection{NavFn::setupNavFn}
+
+该函数对翻译生成的$costarr$数组进行了边际设置等处理，并初始化了$potarr$数组和梯度数组$gradx$、$grady$。初始化$potarr$矩阵元素全部为最大值$POT\_HIGH$，并初始化梯度表初始值全部为0.0，代码如下：
+
+\begin{verbatim}
+    for (int i=0; i<ns; i++){
+      //将pot数组初始化为最大值，默认起点到所有点的行走代价值都为最大
+      potarr[i] = POT_HIGH;
+      //这是什么情况使用的？
+      if (!keepit) 
+            costarr[i] = COST_NEUTRAL;
+      //初始化x,y方向的梯度表
+      gradx[i] = grady[i] = 0.0;
+    }
+\end{verbatim}
+
+接下来设置$costarr$的四条边的$cell$的值为$COST\_OBS$(致命层254)，封闭地图四周，以防产生边界以外的轨迹，代码如下：
+
+\small
+\begin{verbatim}
+    //设置costarr的四条边的cell的值为COST_OBS(致命层254)，封闭地图四周，以防产生边界以外的轨迹
+    COSTTYPE *pc;
+    //costarr第一行全部设置为COST_OBS
+    pc = costarr;
+    for (int i=0; i<nx; i++)
+        *pc++ = COST_OBS;
+    //costarr最后一行全部设置为COST_OBS
+    pc = costarr + (ny-1)*nx;
+    for (int i=0; i<nx; i++)
+        *pc++ = COST_OBS;
+    //costarr第一列全部设置为COST_OBS
+    pc = costarr;
+    for (int i=0; i<ny; i++, pc+=nx)
+        *pc = COST_OBS;
+    //costarr最后一列全部设置为COST_OBS
+    pc = costarr + nx - 1;
+    for (int i=0; i<ny; i++, pc+=nx)
+        *pc = COST_OBS;
+\end{verbatim}
+\normalsize
+
+接下来，初始化一些用于迭代更新$potarr$的数据，并初始化$pending$数组为全0，设置所有的$cell$状态都为非代办状态，其中：
+
+\begin{itemize}
+    \item $curP$记录当前正要访问的栅格
+    \item $nextP$记录即将要访问的栅格中优先级较高的部分
+    \item $overP$记录即将要访问的栅格中优先级较低的部分
+\end{itemize}
+
+另外，$curT$就是用来区分$nextP$和$overP$的传播阈值，后面具体的代码中(函数$NavFn::updateCell$)会有说明，这部分的代码如下：
+
+\begin{verbatim}
+    curT = COST_OBS;  //当前传播阈值
+    curP = pb1; //当前用于传播的cell索引数组
+    curPe = 0;  //当前用于传播的cell的数量
+    nextP = pb2;//用于下个传播过程的cell索引数组
+    nextPe = 0; //用于下个传播过程的cell的数量
+    overP = pb3;//传播界限外的cell索引数组
+    overPe = 0; //传播界限外的cell的数量
+
+    //初始化pending数组为全0，即设置所有的cell状态都不是“待办状态”
+    memset(pending, 0, ns*sizeof(bool));   
+\end{verbatim}
+
+接下来设置目标$goal$在$potarr$中的值为0（这就是后面$NavFn::calcPath$函数中用来判断是否搜索到了目标点的依据，因为整个地图上只有目标点的$pot$值为0[低于$COST\_NEUTRAL=50$]），并把它四周非障碍物的$cell$加入$curP$数组（在函数initCost中完成）中，为下一步的$Potential$值在整张地图上的传播做准备。代码如下：
+
+\begin{verbatim}
+    int k = goal[0] + goal[1]*nx;
+    //设置costarr的索引k（目标）的pot值为0
+    //并对它四周的cell在pending数组中标记为“待办状态”，并把索引存放入curP数组
+    initCost(k,0);
+\end{verbatim}
+
+\subsubsection{NavFn::propNavFnDijkstra}
+
+该函数以目标点（$Potential$值已初始化为0）为起点，向整张地图的$cell$传播，填充$potarr$数组，直到找到起始点为止。$potarr$数组的数据能够反映“走了多远”和“附近的障碍情况”，为最后的路径计算提供了依据
+
+使用$dijkstra$算法广度优先传播，更新$potential$数组，获得传播起点($goal$)到传播过程中任意点的最优路径。
+
+结束条件：
+
+\begin{itemize}
+    \item 达到了最大循环次数$cycles$
+    \item 跑完了所有可以更新的$cell$
+    \item 找到了起始点(则$atStart = true$)
+\end{itemize}
+
+函数中主体是循环迭代更新$potarr$。如果当前正在传播和下一步传播的集都为空，那么说明已经无法继续传播，可能有无法越过的障碍或其他情况，则退出循环。
+
+接下来传播$curP$，即当前$cell$，调用的函数$updateCell$，它能更新当前$cell$在$potarr$数组中的值，并将其四周符合特定条件的点放入$nextP$或$overP$，用于下一步的传播。调用完成后，将$nextP$数组中的$cell$传递给$curP$，继续上述传播，若$nextP$没有$cell$可以用来传播，则引入$overP$中的$cell$。
+
+$nextP$和$overP$都来自从目标点开始传播的四周的$cell$，区别在于它们的“父$cell$”的$pot$值是否达到阈值$curT$，没达到则放入$nextP$，达到则放入$overP$。
+
+在从目标点向全地图传播的过程中检查，当起点的$Potential$值不再是被初始化的无穷大，而是有一个实际的值时，说明到达了起点，传播停止。
+
+\small
+\begin{verbatim}
+    //记录起始位置(也就是算法寻找的终点)的索引
+    int startCell = start[1]*nx + start[0];
+
+    //循环迭代最大为cycles
+    for (; cycle < cycles; cycle++){
+        //如果当前正在传播和下一步传播的集都为空，则退出
+        if (curPe == 0 && nextPe == 0)
+            break;
+
+        //curPe是当前用于传播的cell的数量(nwv没有用)
+        nc += curPe;
+        if (curPe > nwv)
+            nwv = curPe;
+
+        //对pending数组进行设置(curP的cell设置为非待办状态)
+        int *pb = curP;
+        int i = curPe;			
+        while (i-- > 0)
+            pending[*(pb++)] = false;
+
+        pb = curP; 
+        i = curPe;
+        while (i-- > 0)
+            //传播当前节点，更新其pot值
+            //并将其四周符合特定条件的点放入nextP或overP，用于下一步传播
+            updateCell(*pb++);
+
+        if (displayInt > 0 &&  (cycle % displayInt) == 0)
+            displayFn(this);
+
+        //将nextP数组中的cell传递给curP，继续上述传播
+        curPe = nextPe;
+        nextPe = 0;
+        //navigation源码中很多时候感觉直接赋值就可以了，这种交换并没有什么意义
+        pb = curP;		
+        curP = nextP;
+        nextP = pb;
+
+        //若nextP没有cell可以用来传播，则引入overP中的cell
+        if (curPe == 0){
+            //增大传播阈值（这里怎么理解呢？）
+            //初始是 COST_OBS = 254)(每次增加priInc默认是 2*COST_NEUTRAL = 2*50 = 100
+            curT += priInc;
+            curPe = overPe;
+            overPe = 0;
+            pb = curP;
+            curP = overP;
+            overP = pb;
+        }
+
+        //检查我们是否到达了起始点
+        if (atStart)
+            //当[起点]的Pot值(可以认为Pot值就是goal到该点的路径长度)不再是被初始化的无穷大
+            //而是有一个有限值时，说明到达了起点，传播停止
+            if (potarr[startCell] < POT_HIGH)
+            break;
+    }
+\end{verbatim}
+\normalsize
+
+\subsubsection{NavFn::updateCell}
+
+该函数用于更新单个cell的Potential值。
+
+首先获取当前$cell$四周邻点的$potarr$值，并取最小的值存入$ta$，另外，执行一个判断，只有当当前$cell$不是致命障碍物时，才由它向四周传播，否则到它后停止，不传播。代码如下：
+
+\begin{verbatim}
+    //先获取当前cell四周邻点的potarr值
+    float u,d,l,r;
+    l = potarr[n-1];
+    r = potarr[n+1];		
+    u = potarr[n-nx];
+    d = potarr[n+nx];
+
+    //寻找左右邻点最小pot值与上下邻点最小pot值
+    float ta, tc;
+    if (l<r) tc=l; else tc=r;
+    if (u<d) ta=u; else ta=d;
+
+    //只有当当前cell不是致命障碍物时，才由它向四周传播，否则到它后停止，不传播
+    if (costarr[n] < COST_OBS){
+        //获取当前点的cost值
+        float hf = (float)costarr[n];
+        float dc = tc-ta;
+        if (dc < 0){
+            //dc为左右邻点最小pot值与上下邻点最小pot值之差的绝对值
+            dc = -dc;
+            //将当前cell四周邻点中potarr的最小值赋给ta
+            ta = tc;
+        }
+\end{verbatim}
+
+接下来，计算当前$cell$的新的$Potential$值，计算$Potential$值时，有两种情况，需要对“左右邻点最小pot值与上下邻点最小$pot$值之差的绝对值”和“当前$cell$的$cost$值”比较（但是为什么是这个判断依据呢？），决定采用直接相加的公式还是二次逼近后再相加的公式。
+
+采用这两个公式的区别还是所谓的“菱形传播”和“圆形传播”，后者（二次逼近后再相加）能够产生效果更好的菱形传播。
+
+参考博客：
+\href{https://blog.csdn.net/weixin_37835423/article/details/102996256?spm=1001.2101.3001.6650.5&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7Edefault-5.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7Edefault-5.no_search_link}{https://采用两个不同的计算Pot值的公式导致圆形传播和菱形传播说明}
+
+直接利用 $pot = ta+hf$ 公式计算获得的potential分布图：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/pot_simple_equation.png}
+\end{figure}
+
+利用 $v = -0.2301d^2 + 0.5307d + 0.7040$ , $pot = ta + hf*v$ 公式计算获得的potential分布图：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/pot_hard_equation.png}
+\end{figure}
+
+只有当前$cell$的$Potential$计算值$<$原本的$Potential$值，才更新，这意味着从目标点开始，它的$Potential$值被初始化为0，不会被更新，接下来传播到它的四个邻点，才会开始更新他们的$Potential$值。最后，根据相应条件，将临近cell放入nextP或overP，供下次迭代使用，代码如下（其中$INVSQRT2=\frac{1}{\sqrt{2}}$）：
+
+\small
+\begin{verbatim}
+    // now add affected neighbors to priority blocks
+    if (pot < potarr[n]){
+        float le = INVSQRT2*(float)costarr[n-1];
+        float re = INVSQRT2*(float)costarr[n+1];
+        float ue = INVSQRT2*(float)costarr[n-nx];
+        float de = INVSQRT2*(float)costarr[n+nx];
+        //只有当前cell的Potential计算值<原本的Potential值，更新当前cell的Potential值
+        potarr[n] = pot;
+
+        //将临近cell放入nextP或overP，供下次迭代使用
+        //如果当前cell的pot值小于传播阈值curT，则进入nextP，否则进入overP
+        //curT是当前传播阈值（curT=COST_OBS=254）
+        //这里区分进入nextP和overP的目的只是为了获得更好的传播效果：
+        //    若不加区分都进入nextP则是菱形传播
+        //    若如此区分分别进入nextP和overP则是圆形传播(效果更好)
+        if (pot < curT){
+            //如果四周的cell本身的pot值比经过当前cell后再进入对应cell生成的pot值大的话
+            //就进入nextP或overP，说明对应的cell的pot值可以进行优化
+            if (l > pot+le) push_next(n-1);
+            if (r > pot+re) push_next(n+1);
+            if (u > pot+ue) push_next(n-nx);
+            if (d > pot+de) push_next(n+nx);
+        }else{
+            if (l > pot+le) push_over(n-1);
+            if (r > pot+re) push_over(n+1);
+            if (u > pot+ue) push_over(n-nx);
+            if (d > pot+de) push_over(n+nx);
+        }
+    }
+\end{verbatim}
+\normalsize
+
+这里设置一个阈值($curT$)来区分$nextP$和$overP$的传播先后顺序，结果是以目标点为圆心向外圆形传播，而不设阈值区分，则是以目标点为中心向外呈菱形传播，显然前者更合理。
+
+参考博客：
+\href{https://blog.csdn.net/weixin_37835423/article/details/102996256?spm=1001.2101.3001.6650.5&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7Edefault-5.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7Edefault-5.no_search_link}{https://设置传播阈值与否导致圆形传播和菱形传播说明}
+
+未设置传播阈值：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/curT_off.png}
+\end{figure}
+
+设置传播阈值：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/curT_on.png}
+\end{figure}
+
+从对比结果可以看出，当设置传播阈值时，传播方式是以$potential$值为边界一步步向外传播，而不设置传播阈值时，就是以固定的方形传播方式往外传播，会增加很多额外的不必要传播。所以设置传播阈值能提高传播速度。
+
+\subsubsection{NavFn::calcPath}
+
+该函数负责在$potarr$数组的基础上选取一些$cell$点来生成最终的全局规划路径，从起点开始沿着pot值梯度下降的方向寻找到目标点的最优轨迹。
+
+首先初始化路径搜索的起始点，和偏移量（偏移量在后面的迭代过程中用于指示梯度下降的方向）：
+
+\begin{verbatim}
+    //设置起始点，对于四点双线性插值 st总是在左上角
+    if (st == NULL) st = start; //st指向起点(是指针)
+    int stc = st[1]*nx + st[0]; //stc记录起点索引(是索引值)
+
+    //设置偏移量(用于指示梯度下降的传播方向)
+    float dx=0;
+    float dy=0;
+    //路径点索引
+    npath = 0;
+\end{verbatim}
+
+这里所说的"四点双线性插值"不太理解，这个应该后后面$NavFn::gradCell$的梯度计算有关，有待学习。
+
+接下来进入路径搜索的主循环，其实就是通过计算当前$cell$的插值梯度，来决定梯度下降的前进方向，进而不断接近目标点，然后通过目标点的$pot$值$< COST\_NEUTRAL$（这是只有目标点所具有的特性）来判断是否找到了目标点。另外在循环中需要进行震荡检测，防止陷入困境（如局部最低点等）。
+
+主循环的代码如下：
+
+\footnotesize
+\begin{verbatim}
+    //最多进行cycles次循环
+    for (int i=0; i<n; i++){
+        //计算下一个临近点的索引(根据dx、dy给出的方向)
+        int nearest_point = std::max(0,std::min(nx*ny-1,stc+(int)round(dx)+(int)(nx*round(dy))));
+        //如果下一个临近点的pot值小于COST_NEUTRAL(只有被初始化为0的目标点才有可能)则表示找到了目标点
+        //用梯度下降法搜索路径时，是从起始点到目标点方向(不同于计算pot值时是从目标点到起始点)
+        if (potarr[nearest_point] < COST_NEUTRAL){
+            pathx[npath] = (float)goal[0];
+            pathy[npath] = (float)goal[1];
+            return ++npath;
+        }
+
+        //如果到了第一行或最后一行，即超出边界
+        if (stc < nx || stc > ns-nx){
+            ROS_DEBUG("[PathCalc] Out of bounds");
+            return 0;
+        }
+
+        //添加至路径点(dx、dy总是小于1的值，相当于就是指示方向)
+        pathx[npath] = stc%nx + dx;
+        pathy[npath] = stc/nx + dy;
+        npath++;
+
+        //震荡检测(若某一步和上上步的位置相同则认为在振荡)
+        bool oscillation_detected = false;
+        if( npath > 2 && pathx[npath-1] == pathx[npath-3] && pathy[npath-1] == pathy[npath-3] ){
+            ROS_DEBUG("[PathCalc] oscillation detected, attempting fix.");
+            oscillation_detected = true;
+        }
+
+        int stcnx = stc+nx; //当前点下方的点的索引
+        int stcpx = stc-nx; //当前点上方的点的索引
+
+        //检查当前到达节点及周边的8个节点是否有障碍物(或者上一步发现了震荡现象)
+        //如果有的话，则直接将stc指向这8个节点中potential值最低的节点
+        if (potarr[stc]     >= POT_HIGH ||  potarr[stc+1]   >= POT_HIGH ||
+            potarr[stc-1]   >= POT_HIGH ||  potarr[stcnx]   >= POT_HIGH ||
+            potarr[stcnx+1] >= POT_HIGH ||  potarr[stcnx-1] >= POT_HIGH ||
+            potarr[stcpx]   >= POT_HIGH ||  potarr[stcpx+1] >= POT_HIGH ||
+            potarr[stcpx-1] >= POT_HIGH ||  oscillation_detected){
+            ROS_DEBUG("[Path] Pot fn boundary, following grid (%0.1f/%d)", potarr[stc], npath);
+            int minc = stc;
+            int minp = potarr[stc];
+            int st = stcpx - 1;
+            //寻找周围八个邻点的pot中的最小值
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st++;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st++;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st = stc-1;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st = stc+1;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st = stcnx-1;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st++;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            st++;
+            if (potarr[st] < minp) {minp = potarr[st]; minc = st; }
+            stc = minc;
+            dx = 0;
+            dy = 0;
+
+            ROS_DEBUG("[Path] Pot: %0.1f  pos: %0.1f,%0.1f", potarr[stc], pathx[npath-1], pathy[npath-1]);
+
+            if (potarr[stc] >= POT_HIGH){
+            ROS_DEBUG("[PathCalc] No path found, high potential");
+            //savemap("navfn_highpot");
+            return 0;
+            }
+        }
+        //当周围八个邻点没有障碍物时
+        //如果有好的梯度，则直接计算梯度，并沿着梯度方向查找下一个节点
+        else{
+            //计算以下四个点的梯度值(用于插值得到当前的点的插值梯度)
+            gradCell(stc);    //当前点
+            gradCell(stc+1);  //当前点右侧点
+            gradCell(stcnx);  //当前点下方点
+            gradCell(stcnx+1);//当前点右下方点
+
+            //获取插值梯度(不太理解这个计算方法的意义)
+            float x1 = (1.0-dx)*gradx[stc] + dx*gradx[stc+1];
+            float x2 = (1.0-dx)*gradx[stcnx] + dx*gradx[stcnx+1];
+            float x = (1.0-dy)*x1 + dy*x2;
+            float y1 = (1.0-dx)*grady[stc] + dx*grady[stc+1];
+            float y2 = (1.0-dx)*grady[stcnx] + dx*grady[stcnx+1];
+            float y = (1.0-dy)*y1 + dy*y2;
+
+            //显示梯度
+            ROS_DEBUG("[Path] %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f; final x=%.3f, y=%.3f\n"
+        , gradx[stc], grady[stc], gradx[stc+1], grady[stc+1], gradx[stcnx], grady[stcnx], gradx[stcnx+1],
+        grady[stcnx+1], x, y);
+
+            //检查梯度是否为0
+            if (x == 0.0 && y == 0.0){
+                ROS_DEBUG("[PathCalc] Zero gradient");	  
+                return 0;
+            }
+
+            //向正确方向移动(pathStep设置移动的步长)
+            //hypot函数返回给定数字的斜边(即sqrt(x^2+y^2))
+            float ss = pathStep/hypot(x, y);
+            dx += x*ss;
+            dy += y*ss;
+
+            //检查溢出
+            if (dx > 1.0)   { stc++; dx -= 1.0; }
+            if (dx < -1.0)  { stc--; dx += 1.0; }
+            if (dy > 1.0)   { stc+=nx; dy -= 1.0; }
+            if (dy < -1.0)  { stc-=nx; dy += 1.0; }
+        }
+    }
+\end{verbatim}
+\normalsize
+
+参考博客：
+\href{https://blog.csdn.net/Neo11111/article/details/104645228}{关于根据costmap生成potarr数组以及梯度数组gradx和grady的图示}
+
+原始的$costmap$如下图所示：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{image/example_costmap.png}
+\end{figure}
+
+由它生成的potarr图示如下(蓝色为小值，红色为大值，暗红色为无穷大)：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{image/example_potarr.jpg}
+\end{figure}
+
+由它生成的梯度数组gradx（这个部分我还没搞懂）如下图所示：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{image/example_gradx.png}
+\end{figure}
+
+由它生成的梯度数组grady（这个部分我还没搞懂）如下图所示：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{image/example_grady.png}
+\end{figure}
+
+\subsubsection{NavFn::gradCell}
+
+该函数计算一个cell处的梯度值，定义向右和向下为梯度的正方向。
+
+首先针对当前的cell是否是障碍区，对该函数中的dx、dy（注意这里的dx、dy是该函数中的局部变量，和其他函数中的不同）（这里的dx和dy其实就是未进行归一化的梯度）有两种赋值方式：
+
+\small
+\begin{verbatim}
+    float dx = 0.0;
+    float dy = 0.0;
+    //如果当前cell是障碍区 
+    //则如果四周点不是障碍区就直接给dx、dy赋最大值(COST_OBS=+-254)(右下为正方向)
+    if (cv >= POT_HIGH){
+        if (potarr[n-1] < POT_HIGH)
+            dx = -COST_OBS;
+        else if (potarr[n+1] < POT_HIGH)
+            dx = COST_OBS;
+        if (potarr[n-nx] < POT_HIGH)
+            dy = -COST_OBS;
+        else if (potarr[n+nx] < POT_HIGH)
+            dy = COST_OBS;
+    }
+    //如果当前cell不是障碍区 
+    //根据左右侧的梯度的平均值获得dx，根据上下方梯度平均值获得dy
+    else{
+        if (potarr[n-1] < POT_HIGH)
+            dx += potarr[n-1]- cv;	
+        if (potarr[n+1] < POT_HIGH)
+            dx += cv - potarr[n+1]; 
+        if (potarr[n-nx] < POT_HIGH)
+            dy += potarr[n-nx]- cv;	
+        if (potarr[n+nx] < POT_HIGH)
+            dy += cv - potarr[n+nx]; 
+    }
+\end{verbatim}
+\normalsize
+
+然后将dx、dy归一化后作为梯度值保存在gradx和grady梯度数组中：
+
+\small
+\begin{verbatim}
+    float norm = hypot(dx, dy);
+    if (norm > 0){
+        norm = 1.0/norm;
+        gradx[n] = norm*dx;
+        grady[n] = norm*dy;
+    }
+\end{verbatim}
+\normalsize
+
+\subsubsection{NavFn::calcNavFnDijkstra}
+
+这个函数内完成了整个路径计算的流程，顺序调用了几个子部分的函数，代码如下：
+
+\small
+\begin{verbatim}
+    //对翻译生成的costarr数组进行了边际设置等处理，并初始化了potarr数组和梯度数组gradx、grady
+    setupNavFn(true);
+
+    //从目标点开始传播计算pot值
+    propNavFnDijkstra(std::max(nx*ny/20,nx+ny),atStart);
+
+    //从起始点开始梯度下降搜索最优路径
+    int len = calcPath(nx*ny/2);
+
+    //如果找到了有效路径
+    if (len > 0){
+        ROS_DEBUG("[NavFn] Path found, %d steps\n", len);
+        return true;
+    }
+    else{
+        ROS_DEBUG("[NavFn] No path found\n");
+        return false;
+    }
+\end{verbatim}
+\normalsize
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section{amcl源码学习}
 

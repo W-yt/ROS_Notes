@@ -72,7 +72,7 @@ namespace navfn {
 
       //创建全局规划器名称下的句柄
       ros::NodeHandle private_nh("~/" + name);
-      //发布全局规划器名称/plan话题
+      //创建plan话题的publisher
       plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
 
       private_nh.param("visualize_potential", visualize_potential_, false);
@@ -86,7 +86,7 @@ namespace navfn {
       private_nh.param("planner_window_y", planner_window_y_, 0.0);
       private_nh.param("default_tolerance", default_tolerance_, 0.0);
 
-      //发布make_plan的服务
+      //创建make_plan服务的server
       make_plan_srv_ =  private_nh.advertiseService("make_plan", &NavfnROS::makePlanService, this);
 
       initialized_ = true;
@@ -197,16 +197,14 @@ namespace navfn {
     wy = costmap_->getOriginY() + my * costmap_->getResolution();
   }
 
-  bool NavfnROS::makePlan(const geometry_msgs::PoseStamped& start, 
-      const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
+  bool NavfnROS::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
     return makePlan(start, goal, default_tolerance_, plan);
   }
 
   //makePlan是在Movebase中对全局规划器调用的函数
   //它是NavfnROS类的重点函数，负责调用包括Navfn类成员在内的函数完成实际计算，控制着全局规划的整个流程
   //它的输入中最重要的是当前和目标的位置
-  bool NavfnROS::makePlan(const geometry_msgs::PoseStamped& start, 
-      const geometry_msgs::PoseStamped& goal, double tolerance, std::vector<geometry_msgs::PoseStamped>& plan){
+  bool NavfnROS::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, double tolerance, std::vector<geometry_msgs::PoseStamped>& plan){
     boost::mutex::scoped_lock lock(mutex_);
     if(!initialized_){
       ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -238,7 +236,7 @@ namespace navfn {
       return false;
     }
 
-    //清理起始位置cell（必不是障碍物）（cell这里翻译成单元格）
+    //清理起始位置cell(必不是障碍物)
     clearRobotCell(start, mx, my);
 
     //planner指向的是NavFn类，这里调用它的setNavArr函数
@@ -246,7 +244,7 @@ namespace navfn {
     //这三个数组构成NavFn类用Dijkstra计算的主干
     //    costarr数组：     记录全局costmap信息
     //    potarr数组：      储存各cell的Potential值
-    //    x和y向的梯度数组： 用于生成路径
+    //    x和y向的梯度数组：  记录各个cell的梯度值用于生成路径
     planner_->setNavArr(costmap_->getSizeInCellsX(), costmap_->getSizeInCellsY());
     planner_->setCostmap(costmap_->getCharMap(), true, allow_unknown_);
 
@@ -274,7 +272,7 @@ namespace navfn {
     map_goal[0] = mx;
     map_goal[1] = my;
 
-    //设置NavFn类的终点和起点（setStart设置终点 setGoal设置起点？）
+    //设置NavFn类的终点和起点（这里是反着的 导致Navfn类和NavfnROS类的起点和终点是反着的）
     planner_->setStart(map_goal);
     planner_->setGoal(map_start);
 
@@ -324,8 +322,7 @@ namespace navfn {
     }
 
     //potarr数组的发布，与主体关系不大
-    if (visualize_potential_)
-    {
+    if (visualize_potential_){
       // Publish the potentials as a PointCloud2
       sensor_msgs::PointCloud2 cloud;
       cloud.width = 0;

@@ -191,7 +191,7 @@ namespace navfn {
       grady = new float[ns];
   }
 
-  //将Costmap翻译成costarr，根据代价值cost生成无向权重图
+  //将costmap翻译成costarr，根据代价值cost生成无向权重图
   void NavFn::setCostmap(const COSTTYPE *cmap, bool isROS, bool allow_unknown){
     //用指针cm指向数组costarr，costarr是全局规划用到的地图
     //COSTTYPE宏定义为unsigned char，即ROS中使用的地图Costmap2D中用于储存地图数据的成员类型
@@ -229,7 +229,6 @@ namespace navfn {
         }
       }
     }
-
     //地图不是ROS map，可能是PGM地图，同样进行翻译
     else{
       for (int i=0; i<ny; i++){
@@ -258,13 +257,12 @@ namespace navfn {
   //函数内完成了整个路径计算的流程，顺序调用了几个子部分的函数
   bool NavFn::calcNavFnDijkstra(bool atStart){
     //对翻译生成的costarr数组进行了边际设置等处理，并初始化了potarr数组和梯度数组gradx、grady
-    //对四周cell进行处理，记录costarr中障碍物cell数
     setupNavFn(true);
 
-    // calculate the nav fn and path
+    //从目标点开始传播计算pot值
     propNavFnDijkstra(std::max(nx*ny/20,nx+ny),atStart);
 
-    // path
+    //从起始点开始梯度下降搜索最优路径
     int len = calcPath(nx*ny/2);
 
     //如果找到了有效路径
@@ -305,7 +303,7 @@ namespace navfn {
   float *NavFn::getPathY() { return pathy; }
   int    NavFn::getPathLen() { return npath; }
 
-// inserting onto the priority blocks
+//将cell添加到curP、nextP、overP的操作
 #define push_cur(n)  { if (n>=0 && n<ns && !pending[n] && \
     costarr[n]<COST_OBS && curPe<PRIORITYBUFSIZE) \
   { curP[curPe++]=n; pending[n]=true; }}
@@ -354,9 +352,9 @@ namespace navfn {
     curT = COST_OBS;  //当前传播阈值
     curP = pb1; //当前用于传播的cell索引数组      curP记录当前正要访问的栅格
     curPe = 0;  //当前用于传播的cell的数量
-    nextP = pb2;//用于下个传播过程的cell索引数组  nextP记录即将要访问的栅格
+    nextP = pb2;//用于下个传播过程的cell索引数组  nextP记录即将要访问的栅格中优先级较高的部分
     nextPe = 0; //用于下个传播过程的cell的数量
-    overP = pb3;//传播界限外的cell索引数组        overP记录已经访问并确定了最短路径的栅格
+    overP = pb3;//传播界限外的cell索引数组       overP记录即将要访问的栅格中优先级较低的部分
     overPe = 0; //传播界限外的cell的数量
 
     //初始化pending数组为全0，即设置所有的cell状态都不是“待办状态”
@@ -364,7 +362,7 @@ namespace navfn {
 
     //k为目标goal_cell的索引
     int k = goal[0] + goal[1]*nx;
-    //设置costarr的索引k（目标）的cost值为0
+    //设置costarr的索引k（目标）的pot值为0
     //并对它四周的cell在pending数组中标记为“待办状态”，并把索引存放入curP数组
     initCost(k,0);
 
@@ -447,12 +445,14 @@ namespace navfn {
         potarr[n] = pot;
 
         //将临近cell放入nextP或overP，供下次迭代使用
-        //如果当前cell的pot值小于传播阈值，则可以经过它进行传播，则进入nextP，否则进入overP
+        //如果当前cell的pot值小于传播阈值curT，则进入nextP，否则进入overP
         //curT是当前传播阈值（curT=COST_OBS=254）
+        //这里区分进入nextP和overP的目的只是为了获得更好的传播效果：
+        //    若不加区分都进入nextP则是菱形传播
+        //    若如此区分分别进入nextP和overP则是圆形传播(效果更好)
         if (pot < curT){
-          //我自己目前的理解：（但后后面的插入overP怎么解释呢？）
           //如果四周的cell本身的pot值比经过当前cell后再进入对应cell生成的pot值大的话
-          //就进入nextP，说明对应的cell的pot值可以进行优化
+          //就进入nextP或overP，说明对应的cell的pot值可以进行优化
           if (l > pot+le) push_next(n-1);
           if (r > pot+re) push_next(n+1);
           if (u > pot+ue) push_next(n-nx);
@@ -468,6 +468,7 @@ namespace navfn {
   }
 
 #define INVSQRT2 0.707106781
+  //for A*-method
   inline void NavFn::updateCellAstar(int n){
     // get neighbors
     float u,d,l,r;
@@ -567,16 +568,12 @@ namespace navfn {
       if (curPe > nwv)
         nwv = curPe;
 
-      //reset pending flags on current priority buffer
       //对pending数组进行设置(curP的cell设置为非待办状态)
       int *pb = curP;
       int i = curPe;			
       while (i-- > 0)
         pending[*(pb++)] = false;
 
-      // 传播当前节点，并将当前节点上下左右四个节点保存到nextP数组当中，当当前节点传播完之后，将nextP数组中的节点数组传递给当前节点数组curP，又继续开始传播当前节点，循环往复．
-
-      // process current priority buffer
       pb = curP; 
       i = curPe;
       while (i-- > 0)
@@ -621,7 +618,7 @@ namespace navfn {
     else return false;
   }
 
-  //navfn中的A*-method实现部分，这里不看这个了，在global_plan中再学习
+  //for A*-method
   bool NavFn::propNavFnAstar(int cycles){
       int nwv = 0;			// max priority block size
       int nc = 0;			// number of cells put into priority blocks
@@ -699,12 +696,9 @@ namespace navfn {
     return last_path_cost_;
   }
 
-  //算法可能陷入的困境：
-  //    1、卡在同一索引位置
-  //    2、没有接近目标
-  //    3、被高Potential值的cell包围
+  //该函数负责在potarr数组的基础上选取一些cell点来生成最终的全局规划路径
+  //从起点开始沿着最优行走代价值梯度下降的方向寻找到目标点的最优轨迹
   int NavFn::calcPath(int n, int *st){
-    // test write
     //savemap("test");
 
     //初始化路径数组(若其中有数据则重建)
@@ -720,7 +714,7 @@ namespace navfn {
     if (st == NULL) st = start; //st指向起点(是指针)
     int stc = st[1]*nx + st[0]; //stc记录起点索引(是索引值)
 
-    //设置偏移量(偏移量dx,dy的作用?)
+    //设置偏移量(用于指示梯度下降的传播方向)
     float dx=0;
     float dy=0;
     //路径点索引
@@ -728,12 +722,14 @@ namespace navfn {
 
     //最多进行cycles次循环
     for (int i=0; i<n; i++){
-      //检查是否靠近了目标点
+      //计算下一个临近点的索引(根据dx、dy给出的方向)
       int nearest_point = std::max(0,std::min(nx*ny-1,stc+(int)round(dx)+(int)(nx*round(dy))));
+      //如果下一个临近点的pot值小于COST_NEUTRAL(只有被初始化为0的目标点才有可能)则表示找到了目标点
+      //并且我们发现，在用梯度下降法进行路径搜索时，是从起始点到目标点方向(不同于传播计算pot值时是从目标点到起始点的方向)
       if (potarr[nearest_point] < COST_NEUTRAL){
         pathx[npath] = (float)goal[0];
         pathy[npath] = (float)goal[1];
-        return ++npath;	// done!
+        return ++npath;
       }
 
       //如果到了第一行或最后一行，即超出边界
@@ -742,7 +738,7 @@ namespace navfn {
         return 0;
       }
 
-      //添加至路径点
+      //添加至路径点(dx、dy总是小于1的值，相当于就是指示方向)
       pathx[npath] = stc%nx + dx;
       pathy[npath] = stc/nx + dy;
       npath++;
@@ -765,7 +761,6 @@ namespace navfn {
           potarr[stcpx]   >= POT_HIGH ||  potarr[stcpx+1] >= POT_HIGH ||
           potarr[stcpx-1] >= POT_HIGH ||  oscillation_detected){
         ROS_DEBUG("[Path] Pot fn boundary, following grid (%0.1f/%d)", potarr[stc], npath);
-        // check eight neighbors to find the lowest
         int minc = stc;
         int minp = potarr[stc];
         int st = stcpx - 1;
@@ -800,21 +795,21 @@ namespace navfn {
       //当周围八个邻点没有障碍物时
       //如果有好的梯度，则直接计算梯度，并沿着梯度方向查找下一个节点
       else{
-        //get grad at four positions near cell
+        //计算以下四个点的梯度值(用于插值得到当前的点的插值梯度)
         gradCell(stc);    //当前点
         gradCell(stc+1);  //当前点右侧点
         gradCell(stcnx);  //当前点下方点
         gradCell(stcnx+1);//当前点右下方点
 
-        //获取插值梯度
+        //获取插值梯度(不太理解这个计算方法的意义)
         float x1 = (1.0-dx)*gradx[stc] + dx*gradx[stc+1];
         float x2 = (1.0-dx)*gradx[stcnx] + dx*gradx[stcnx+1];
-        float x = (1.0-dy)*x1 + dy*x2; // interpolated x
+        float x = (1.0-dy)*x1 + dy*x2;
         float y1 = (1.0-dx)*grady[stc] + dx*grady[stc+1];
         float y2 = (1.0-dx)*grady[stcnx] + dx*grady[stcnx+1];
-        float y = (1.0-dy)*y1 + dy*y2; // interpolated y
+        float y = (1.0-dy)*y1 + dy*y2;
 
-        // show gradients
+        //显示梯度
         ROS_DEBUG("[Path] %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f; final x=%.3f, y=%.3f\n", gradx[stc], grady[stc], gradx[stc+1], grady[stc+1], gradx[stcnx], grady[stcnx], gradx[stcnx+1], grady[stcnx+1], x, y);
 
         //检查梯度是否为0
@@ -855,7 +850,8 @@ namespace navfn {
     float dx = 0.0;
     float dy = 0.0;
 
-    // check for in an obstacle
+    //如果当前cell是障碍区 
+    //则如果四周点不是障碍区就直接给dx、dy赋最大值(COST_OBS=+-254)(右下为正方向)
     if (cv >= POT_HIGH){
       if (potarr[n-1] < POT_HIGH)
         dx = -COST_OBS;
@@ -866,22 +862,20 @@ namespace navfn {
       else if (potarr[n+nx] < POT_HIGH)
         dy = COST_OBS;
     }
-
-    // not in an obstacle
+    //如果当前cell不是障碍区 
+    //根据左右侧的梯度的平均值获得dx，根据上下方梯度平均值获得dy
     else{
-      // dx calc, average to sides
       if (potarr[n-1] < POT_HIGH)
         dx += potarr[n-1]- cv;	
       if (potarr[n+1] < POT_HIGH)
         dx += cv - potarr[n+1]; 
-      // dy calc, average to sides
       if (potarr[n-nx] < POT_HIGH)
         dy += potarr[n-nx]- cv;	
       if (potarr[n+nx] < POT_HIGH)
         dy += cv - potarr[n+nx]; 
     }
 
-    // normalize
+    //将dx、dy归一化后赋值给梯度数组
     float norm = hypot(dx, dy);
     if (norm > 0){
       norm = 1.0/norm;
@@ -891,53 +885,40 @@ namespace navfn {
     return norm;
   }
 
+  //display function setup
+  //<n> is the number of cycles to wait before displaying(use 0 to turn it off)
+  void NavFn::display(void fn(NavFn *nav), int n){
+    displayFn = fn;
+    displayInt = n;
+  }
 
-  //
-  // display function setup
-  // <n> is the number of cycles to wait before displaying,
-  //     use 0 to turn it off
+  //debug writes(saves costmap and start/goal)
+  void NavFn::savemap(const char *fname){
+    char fn[4096];
 
-  void
-    NavFn::display(void fn(NavFn *nav), int n)
+    ROS_DEBUG("[NavFn] Saving costmap and start/goal points");
+    // write start and goal points
+    sprintf(fn,"%s.txt",fname);
+    FILE *fp = fopen(fn,"w");
+    if (!fp)
     {
-      displayFn = fn;
-      displayInt = n;
+      ROS_WARN("Can't open file %s", fn);
+      return;
     }
+    fprintf(fp,"Goal: %d %d\nStart: %d %d\n",goal[0],goal[1],start[0],start[1]);
+    fclose(fp);
 
-
-  //
-  // debug writes
-  // saves costmap and start/goal
-  //
-
-  void 
-    NavFn::savemap(const char *fname)
+    // write cost array
+    if (!costarr) return;
+    sprintf(fn,"%s.pgm",fname);
+    fp = fopen(fn,"wb");
+    if (!fp)
     {
-      char fn[4096];
-
-      ROS_DEBUG("[NavFn] Saving costmap and start/goal points");
-      // write start and goal points
-      sprintf(fn,"%s.txt",fname);
-      FILE *fp = fopen(fn,"w");
-      if (!fp)
-      {
-        ROS_WARN("Can't open file %s", fn);
-        return;
-      }
-      fprintf(fp,"Goal: %d %d\nStart: %d %d\n",goal[0],goal[1],start[0],start[1]);
-      fclose(fp);
-
-      // write cost array
-      if (!costarr) return;
-      sprintf(fn,"%s.pgm",fname);
-      fp = fopen(fn,"wb");
-      if (!fp)
-      {
-        ROS_WARN("Can't open file %s", fn);
-        return;
-      }
-      fprintf(fp,"P5\n%d\n%d\n%d\n", nx, ny, 0xff);
-      fwrite(costarr,1,nx*ny,fp);
-      fclose(fp);
+      ROS_WARN("Can't open file %s", fn);
+      return;
     }
+    fprintf(fp,"P5\n%d\n%d\n%d\n", nx, ny, 0xff);
+    fwrite(costarr,1,nx*ny,fp);
+    fclose(fp);
+  }
 };
