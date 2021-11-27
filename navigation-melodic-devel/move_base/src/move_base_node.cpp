@@ -33,12 +33,15 @@
 int main(int argc, char** argv){
   //初始化节点 move_base_node
   ros::init(argc, argv, "move_base_node");
+
+  //tf监听器（TransformListener）会对监听到的tf数据进行10秒的缓存
+  //buffer用来存储这10秒的tf数据
   tf2_ros::Buffer buffer(ros::Duration(10));
   tf2_ros::TransformListener tf(buffer);
 
-  //实例化了MoveBase这个类
+  //实例化了MoveBase这个类（move_base是namespace；MoveBase是类名）
   //Action服务的定义、全局规划器、局部规划器等都在这个类的成员函数中实现
-  move_base::MoveBase move_base( buffer );
+  move_base::MoveBase move_base(buffer);
 
   //实例化之后，Action开始监听服务请求，并通过ros::spin()传递到Action的回调函数中进行处理
 

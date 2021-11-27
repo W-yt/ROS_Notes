@@ -43,8 +43,7 @@ extern "C" {
 }
 #endif
 
-void
-setcostobs(COSTTYPE *cmap, int n, int w)
+void setcostobs(COSTTYPE *cmap, int n, int w)
 {
   int CS = 11;
   for (int i=-CS/2; i<CS/2; i++)

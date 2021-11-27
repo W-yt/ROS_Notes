@@ -111,6 +111,7 @@ int main (int argc, char** argv)
   navfn::NavfnWithCostmap navfn("navfn_planner", &lcr);
 
   ros::spin();
+  
   return 0;
 }
 

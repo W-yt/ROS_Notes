@@ -1,4 +1,4 @@
-\documentclass[10pt, oneside]{book}
+\documentclass[9pt, oneside]{book}
 \usepackage{xeCJK}
 \usepackage{amsmath, amsthm, amssymb, bm, graphicx, hyperref, mathrsfs}
 \usepackage{geometry}
@@ -16,7 +16,7 @@
 \usepackage{hyperref} %用于引用的宏包
 % \hypersetup{colorlinks, linkcolor=blue} %设置引用的字体颜色
 \usepackage{color} %用于设置字体颜色的宏包
-
+\usepackage{url} %用于超链接的宏包
 
 
 % 封面部分
@@ -43,7 +43,15 @@
     \Huge\textbf{前言}
 \end{center}~\
 
-主要参考了胡春旭的《ROS机器人开发实践》一书。
+\noindent{\large{本书的主要内容包括：}}
+\normalsize
+\begin{itemize}
+    \item [-] 学习古月居的相关入门课程视频的内容记录
+    \item [-] 阅读胡春旭的《ROS机器人开发实践》的笔记整理
+    \item [-] 参考高翔的《视觉SLAM十四讲》补充了关于三维刚体运动学的内容
+    \item [-] 参考一些博客阅读ros-navigation导航包源码的思路整理
+    \item [-]
+\end{itemize}
 
 ~\\
 \begin{flushright}     
@@ -61,7 +69,6 @@
 \setcounter{page}{1}
 \pagenumbering{arabic}
 
-% -------------------------chapter 1-------------------------
 \chapter{ROS的基本架构}
 
 \section{整体架构}
@@ -99,6 +106,10 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
 \subsection{服务 Service}
 
 对于双向的同步传输模式，采用基于客户端/服务器（Client/Server）的模型，包含请求和应答，类似于Web服务器，ROS中只允许有一个节点提供指定命名的服务。
+
+\subsection{动作 Action}
+
+action是一种类似于Service的问答通信机制，也采用服务器/客户端（Client/Server）的工作模式，不同之处在于action带有连续反馈，可以不断反馈任务进度，也可以在任务过程中中止运行。
 
 \subsection{节点管理器 Master}
 
@@ -169,6 +180,39 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
 
 需要注意的是：有可能是一个 Talker 连接上多个 Listener（一对多）。
 
+\subsection{动作通信机制——Action}
+
+Action并不是一个全新的机制，而是由底层的三个话题和服务组成：一个任务目标（Goal，服务），一个执行结果（Result，服务），周期数据反馈（Feedback，话题）。
+
+Action是可抢占式的，由于需要执行一段时间，比如执行过程中你不想跑了，那可以随时发送取消指令，动作终止，如果执行过程中发送一个新的action目标，则会直接中断上一个目标开始执行最新的任务目标。
+
+总体上来讲，Action是一个客户端/服务器的通信模型，客户端发送一个任务目标，服务器端根据收到的目标执行并周期反馈状态，执行完成后反馈一个执行结果。
+
+Action通信机制的工作原理图如下：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{image/Action.png}
+\end{figure}
+
+其中Action机制下，具体包含的一些信息种类有这五种：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{image/Action_topic.jpg}
+\end{figure}
+
+\begin{itemize}
+    \item goal：发布任务目标
+    \item cancel：请求取消任务
+    \item status：通知Client当前的状态
+    \item feedback：周期反馈任务运行的监控数据
+    \item result：向Client发送任务的执行结果，只发布一次
+\end{itemize}
+
+Client向Server端发布任务目标以及在必要的时候取消任务，Server会向Client发布当前状态、实时反馈和任务执行的最终结果。
+
+
 \subsection{参数管理机制——Parameter}
 
 \begin{figure}[H]
@@ -186,8 +230,6 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
 
 需要注意的是：如果 Listener 向实时知道共享参数的变化，需要自己不停的去询问 ROS Master；
 
-
-% -------------------------chapter 2-------------------------
 \chapter{ROS基础}
 
 \section{turtlesim功能包}
@@ -419,7 +461,6 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
     add_dependencies(talker ${PROJECT_NAME}_generate_messages_cpp)
 \end{verbatim}
 
-
 \section{Service中的Client和Server}
 
 \subsection{创建Client}
@@ -460,7 +501,7 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
     }
 \end{verbatim}
 
-\subsection{创建server}
+\subsection{创建Server}
 
 \begin{verbatim}
     #include "ros/ros.h"
@@ -538,6 +579,16 @@ OS层：是ROS依托的底层操作系统，一般是Ubuntu。
     target_link_libraries(client ${catkin_LIBRARIES})
     add_dependencies(client ${PROJECT_NAME}_gencpp)
 \end{verbatim}
+
+\section{Action中的Client和Server}
+
+\subsection{Client的创建}
+
+\subsection{Server的创建}
+
+\subsection{自定义动作数据}
+
+\subsection{CMakeLists的编写}
 
 \section{ROS中的命名空间}
 
@@ -661,8 +712,6 @@ export ROS_NAMESPACE = default-namespace
     $ echo "export ROS_MASTER_URI = http://<主机名>::11311" >> ~/.bashrc
 \end{verbatim}
 
-
-% -------------------------chapter 3-------------------------
 \chapter{ROS中的常用组件}
 
 \section{launch文件}
@@ -990,8 +1039,6 @@ rosbag功能包提供了数据记录与回放的功能。
     $ rosbag play <your bagfile>
 \end{verbatim}
 
-
-% -------------------------chapter 4-------------------------
 \chapter{机器人的建模与仿真}
 
 \section{URDF文件}
@@ -1861,7 +1908,6 @@ Gazebo插件可以根据插件的运动范围应用到URDF模型的<robot>、<li
 
 注意需要设置fixed frame为base\_footprint，并且添加一个LaserScan插件，并设置插件的订阅话题为“/scan”才可以正确查看。
 
-% -------------------------chapter 5-------------------------
 \chapter{机器人SLAM与自主导航}
 
 三个重点问题：地图的精确建模、机器人准确定位、路径实时规划。
@@ -2365,6 +2411,15 @@ observation\_sources参数列出了代价地图需要关注的所有传感器信
 
 \chapter{Navigation详细学习}
 
+学习代码版本：melodic-devel-1.16.7
+
+导航包功能框架图：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{image/导航功能包框架.png}
+\end{figure}
+
 \section{三维空间中的刚体运动(基础知识补充)}
 
 为什么要研究这个问题？因为当我们描述机器人的位姿时，就是在描述一个刚体在三维空间中的运动。
@@ -2712,7 +2767,665 @@ observation\_sources参数列出了代价地图需要关注的所有传感器信
 
 \section{move\_base源码学习}
 
+$Movebase$的主干部分是一个$Action$服务器，接收用户发送的目标位置，并调用全局规划器和局部规划器，基于各层代价地图的信息进行路径规划，得到最优路径，向用户反馈机器人速度指令，驱动机器人按照指令运动，最终到达目标位置。这里不涉及到规划路径和更新地图的具体算法和实现，主要是完成了一个大的调用框架，具体的实现在各子过程的ROS封装类中。
+
+\subsection{源码相关文件}
+
+\begin{itemize}
+    \item 源码链接：
+    
+    \url{https://github.com/ros-planning/navigation/tree/melodic-devel}
+
+    \item 源码注释链接：
+    
+    \url{https://github.com/W-yt/ROS_Notes/tree/master/navigation-melodic-devel/move_base}
+\end{itemize}
+
+对应源码中的相关文件：
+
+\begin{itemize}
+    \item move\_base/src/move\_base\_node.cpp
+    \item move\_base/src/move\_base.cpp
+\end{itemize}
+
+\subsection{整体结构图}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{image/move_base.png}
+\end{figure}
+
+在Movebase主体中，各层地图的更新被启动，Action的回调函数触发全局规划线程，若成功，则将全局规划结果传入局部规划器，循环进行局部规划，得到速度指令，控制机器人前进，直到到达目标。其间，需要判断机器人是否到达终点（若是则规划停止）、机器人是否状态异常如发生震荡行为（若是则进入恢复行为）、机器人是否超时（若是则停止规划发布零速，否则重新规划）等等。这个主体是一个大的调用框架，保证了运动规划的正常运行，具体算法在各子过程中分别实现。
+
+\subsection{move\_base\_node.cpp}
+
+move\_base\_node.cpp文件中，完成了$move\_base\_node$节点的初始化、$MoveBase$类的实例化。move\_base的主要工作：Action服务的定义、全局规划器、局部规划器的调用都以类成员函数的形式定义在$MoveBase$类中。
+
+之后，Action开始进入监听状态，等待服务请求，然后进入回调函数（$move\_base.cpp$中的$MoveBase::executeCb$函数）进行处理。
+
+\begin{verbatim}
+    int main(int argc, char** argv){
+        //初始化节点 move_base_node
+        ros::init(argc, argv, "move_base_node");
+      
+        //tf监听器（TransformListener）会对监听到的tf数据进行10秒的缓存
+        //buffer用来存储这10秒的tf数据
+        tf2_ros::Buffer buffer(ros::Duration(10));
+        tf2_ros::TransformListener tf(buffer);
+      
+        //实例化了MoveBase这个类（move_base是namespace；MoveBase是类名）
+        //Action服务的定义、全局规划器、局部规划器等都在这个类的成员函数中实现
+        move_base::MoveBase move_base(buffer);
+      
+        //实例化之后，Action开始监听服务请求，并通过ros::spin()传递到Action的回调函
+    数中进行处理
+        ros::spin();
+      
+        return(0);
+    }
+\end{verbatim}
+
+\subsection{move\_base.cpp}
+
+\subsubsection{函数列表}
+
+核心函数：
+\begin{itemize}
+    \item [-] 构造函数 MoveBase::MoveBase 
+    \item [-] 控制主体(回调函数) MoveBase::executeCb
+    \item [-] 全局规划线程 MoveBase::planThread
+    \item [-] 全局规划函数 MoveBase::makePlan
+    \item [-] 局部规划函数 MoveBase::executeCycle
+    \item [-] 析构函数 MoveBase::~MoveBase
+\end{itemize}
+    
+其他函数：
+\begin{itemize}
+    \item [-] 动态加载配置参数 MoveBase::reconfigureCB
+    \item [-] 仿真时发布目标函数 MoveBase::goalCB
+    \item [-] 可以自动搜索终点附近可达到点的路径规划服务 MoveBase::planService
+    \item [-] 发布零速度 MoveBase::publishZeroVelocity
+    \item [-] 检查四元数合法性函数 MoveBase::isQuaternionValid
+    \item [-] 将目标点转换到全局坐标系下 MoveBase::goalToGlobalFrame
+    \item [-] 唤醒路径规划线程 MoveBase::wakePlanner
+    \item [-] 获取两点之间的水平路径 MoveBase::distance
+    \item [-] 加载恢复行为插件 MoveBase::loadRecoveryBehaviors
+    \item [-] 加载默认恢复行为插件 MoveBase::loadDefaultRecoveryBehaviors
+    \item [-] 路劲规划系统复位 MoveBase::resetState
+    \item [-] 获取在指定代价地图下的位姿 MoveBase::getRobotPose
+\end{itemize}
+
+\subsubsection{MoveBase::MoveBase()}
+
+$MoveBase$类的构造函数，获取服务器上的参数值，初始化规划的缓冲池，创建一些消息话题的收发端以及全局和本地规划器。
+
+创建Action服务器：
+
+\begin{verbatim}
+    //as_指向action服务器，当执行as_->start()时调用MoveBase::executeCb函数
+    as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBase::executeCb, this, _1), false);
+\end{verbatim}
+
+初始化plan的缓冲池：
+
+\begin{verbatim}
+    planner_plan_ = new std::vector<geometry_msgs::PoseStamped>();
+    latest_plan_ = new std::vector<geometry_msgs::PoseStamped>();
+    controller_plan_ = new std::vector<geometry_msgs::PoseStamped>();
+\end{verbatim}
+
+从这里可以看出，plan的结果其实就是$geometry\_msgs::PoseStamped$类型的一个队列。另外，$geometry\_msgs::PoseStamped is A Pose with reference coordinate frame and timestamp$
+，即用一个三维的点表示位置，一个四元数表示姿态。所以说plan的结果就是一个机器人的位姿队列。
+
+初始化全局规划器和局部规划器的指针和各自的costmap：
+
+规划器用到的地图实质上是Costmap2DROS类的实例，这个类是ROS对costmap的封装。
+
+\begin{verbatim}
+    //创建全局规划器的代价地图
+    planner_costmap_ros_ = new costmap_2d::Costmap2DROS("global_costmap", tf_);
+    planner_costmap_ros_->pause();
+
+    //初始化全局规划器，planner_指针
+    try {
+      planner_ = bgp_loader_.createInstance(global_planner);
+      planner_->initialize(bgp_loader_.getName(global_planner), planner_costmap_ros_);
+    } catch (const pluginlib::PluginlibException& ex) {
+      ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", global_planner.c_str(), ex.what());
+      exit(1);
+    }
+
+    //创建本地规划器的代价地图
+    controller_costmap_ros_ = new costmap_2d::Costmap2DROS("local_costmap", tf_);
+    controller_costmap_ros_->pause();
+
+    //创建本地规划器，tc_指针
+    try {
+      tc_ = blp_loader_.createInstance(local_planner);
+      ROS_INFO("Created local_planner %s", local_planner.c_str());
+      tc_->initialize(blp_loader_.getName(local_planner), &tf_, controller_costmap_ros_);
+    } catch (const pluginlib::PluginlibException& ex) {
+      ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", local_planner.c_str(), ex.what());
+      exit(1);
+    }
+\end{verbatim}
+
+开始动态更新代价地图：
+
+\begin{verbatim}
+    planner_costmap_ros_->start();
+    controller_costmap_ros_->start();
+\end{verbatim}
+
+启动Action服务器：
+
+\begin{verbatim}
+    as_->start();
+\end{verbatim}
+
+\subsubsection{MoveBase::executeCb()}
+
+$executeCb$是$Action$的回调函数，它是$MoveBase$控制流的主体，调用了$MoveBase$内另外几个作为子部分的重要成员函数，先后完成了全局规划和局部规划。
+
+当有了一个goal之后，启动全局规划：
+
+\begin{verbatim}
+    boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
+    //用接收到的目标goal来更新全局规划目标（全局变量），它在planThread中会被用来做全局规划的当前目标
+    planner_goal_ = goal;
+    runPlanner_ = true;
+    //开始全局规划并于此处阻塞
+    //在这里调用notify会直接启动全局规划器线程，进行全局路径规划
+    //全局规划器线程绑定的函数plannerThread()里有planner_cond_对象的wait函数
+    planner_cond_.notify_one();
+    lock.unlock();
+\end{verbatim}
+
+全局规划完成后，循环调用executeCycle函数来控制机器人进行局部规划。
+
+在循环中如果发现，Action服务器被抢占，则分两种可能进行讨论：
+
+\begin{itemize}
+    \item 如果是收到新目标，那么放弃当前目标，使用新目标，重复前面对目标进行的相关处理，并重新全局规划；
+    \item 如果是收到取消行动命令，直接结束返回。
+\end{itemize}
+
+如果服务器未被抢占，或被抢占的if结构已执行完毕，接下来开始局部规划。代码如下：
+
+\begin{verbatim}
+    if(as_->isPreemptRequested()){
+        //如果是 局部规划进行过程中收到新的目标
+        if(as_->isNewGoalAvailable()){
+            //如果获得了新目标，接收并存储新目标，并将上述过程重新进行一遍
+            move_base_msgs::MoveBaseGoal new_goal = *as_->acceptNewGoal();
+            ......
+        }
+        //如果是 收到取消行动的命令
+        else {
+            //被取消了 则重置服务器状态
+            resetState();
+
+            //Action服务器清除相关内容，并调用setPreempted()函数
+            ROS_DEBUG_NAMED("move_base","Move base preempting the current goal");
+            as_->setPreempted();
+
+            return;
+        }
+    }
+    //检查目标是否被转换到全局坐标系（/map）下，如果并没有转换过来 则进行转换 然后再次执行上面的操作
+    if(goal.header.frame_id != planner_costmap_ros_->getGlobalFrameID()){
+        goal = goalToGlobalFrame(goal);
+        ......
+    }
+
+    ros::WallTime start = ros::WallTime::now();
+
+    //调用executeCycle函数进行局部规划，传入目标和全局规划路线
+    bool done = executeCycle(goal, global_plan);
+\end{verbatim}
+
+\subsubsection{MoveBase::planThread()}
+
+$planThread()$的核心是调用$makePlan$函数，该函数中实际进行全局规划。当$executeCB$函数中唤醒$planThread$（调用$planner\_cond\_.notify\_one()$），并将标志位$runPlanner\_$设置为真，$planThread()$跳出内部的循环，继续进行下面的全局规划部分。
+
+循环等待$executeCB$函数中的唤醒操作：
+
+\begin{verbatim}
+    while(wait_for_wake || !runPlanner_){
+        //if we should not be running the planner then suspend this thread
+        ROS_DEBUG_NAMED("move_base_plan_thread","Planner thread is suspending");
+        //调用wait函数时，函数会自动调用lock.unlock()释放锁，使得其他被阻塞在锁竞争上的线程得以继续执行
+        planner_cond_.wait(lock);
+        wait_for_wake = false;
+    }
+\end{verbatim}
+
+被唤醒后，调用$makePlan$函数，进行全局规划：
+
+\begin{verbatim}
+    ros::Time start_time = ros::Time::now();
+
+    //把全局中被更新的全局目标planner_goal存储为临时目标
+    geometry_msgs::PoseStamped temp_goal = planner_goal_;
+    lock.unlock();
+    ROS_DEBUG_NAMED("move_base_plan_thread","Planning...");
+
+    //run planner
+    //全局规划初始化 清空
+    planner_plan_->clear();
+    //调用MoveBase类的makePlan函数，如果成功为临时目标制定全局规划planner_plan_，则返回true
+    bool gotPlan = n.ok() && makePlan(temp_goal, *planner_plan_);
+\end{verbatim}
+
+若全局规划成功，则交换$planner\_plan\_$和$latest\_plan$的值，即令$latest\_plan$中存储的是本次全局规划的结果（最新），$planner\_plan\_$中存储的是上次全局规划的结果（次新）。设置标志位$new\_global\_plan\_ = true$，表示得到了新的全局规划路线，并设置$Movebase$状态标志位$state\_$为$CONTROLLING$，即全局规划完成，开始进行局部控制。
+
+如果全局规划失败，$MoveBase$还在$PLANNING$状态，即机器人没有移动，则进入自转模式。
+
+\begin{verbatim}
+    if(gotPlan){
+        ROS_DEBUG_NAMED("move_base_plan_thread","Got Plan with %zu points!", planner_plan_->size());
+        std::vector<geometry_msgs::PoseStamped>* temp_plan = planner_plan_;
+        lock.lock();
+        planner_plan_ = latest_plan_;
+        latest_plan_ = temp_plan;
+
+        last_valid_plan_ = ros::Time::now();
+        planning_retries_ = 0;
+        new_global_plan_ = true;
+
+        ROS_DEBUG_NAMED("move_base_plan_thread","Generated a plan from the base_global_planner");
+
+        //确保只有在我们还没到达目标时才启动controller以局部规划
+        //如果runPlanner_在调用此函数时被置为真，将MoveBase状态设置为CONTROLLING（局部规划中）
+        if(runPlanner_)
+            state_ = CONTROLLING;
+        //planner_frequency_ <= 0则全局规划就是触发机制的，不会自动循环
+        if(planner_frequency_ <= 0)
+            runPlanner_ = false;
+        lock.unlock();
+    }
+    //如果全局规划失败并且MoveBase还在PLANNING状态，即机器人没有移动，则进入自转模式
+    else if(state_==PLANNING){
+        ROS_DEBUG_NAMED("move_base_plan_thread","No Plan...");
+        ros::Time attempt_end = last_valid_plan_ + ros::Duration(planner_patience_);
+
+        //检查时间和次数是否超过限制，若其中一项不满足限制，停止全局规划
+        lock.lock();
+        planning_retries_++;
+        if(runPlanner_ && (ros::Time::now() > attempt_end || planning_retries_ > uint32_t(max_planning_retries_))){
+            state_ = CLEARING;
+            runPlanner_ = false;
+            publishZeroVelocity();
+            recovery_trigger_ = PLANNING_R;
+        }
+        lock.unlock();
+    }
+\end{verbatim}
+
+\subsubsection{MoveBase::makePlan()}
+
+在该函数中正式执行全局路径规划算法，结果保存在$planner\_$中，但是算法实现的不在这里 是一个同名函数$BaseGlobalPlanner::makePlan$实现的。
+
+先进行一些预备工作，如检查全局代价地图、起始位姿，然后将起始位姿的数据格式做转换。接下来是实际进行全局规划的函数，调用全局规划器的$makePlan$函数$planner\_->makePlan(start, goal, plan)$，传入机器人当前位姿和目标，得到$plan$，若规划失败或得到的$plan$为空，返回$false$，否则返回$true$。
+
+\begin{verbatim}
+    const geometry_msgs::PoseStamped& start = global_pose;
+    if(!planner_->makePlan(start, goal, plan) || plan.empty()){
+        ROS_DEBUG_NAMED("move_base","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x, goal.pose.position.y);
+        return false;
+    }
+\end{verbatim}
+
+\subsubsection{MoveBase::executeCycle()}
+
+$executeCycle$函数的作用是进行局部规划。
+
+通过标志位$new\_global\_plan\_$判断全局规划是否得到了新的路线。如果获得了新的路线，则通过指针交换，将$latest\_plan\_$（最新的全局规划结果）的值传递给$controller\_plan\_$即局部规划使用，然后将上一次的局部规划路线传递给$latest\_plan$。进而在实例$tc\_$上调用局部规划器$BaseLocalPlanner$的类函数$setPlan()$，把全局规划的结果传递给局部规划器。代码如下：
+
+\begin{verbatim}
+    if(new_global_plan_){
+        new_global_plan_ = false;
+        ROS_DEBUG_NAMED("move_base","Got a new plan...swap pointers");
+
+        std::vector<geometry_msgs::PoseStamped>* temp_plan = controller_plan_;
+        boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
+        controller_plan_ = latest_plan_;
+        latest_plan_ = temp_plan;
+        lock.unlock();
+        ROS_DEBUG_NAMED("move_base","pointers swapped!");
+
+        //在实例tc_上调用setPlan() 把全局规划的结果传递给局部规划器，如果传递失败，退出并返回。
+        if(!tc_->setPlan(*controller_plan_)){
+            //ABORT and SHUTDOWN COSTMAPS
+            ROS_ERROR("Failed to pass global plan to the controller, aborting.");
+            resetState();
+
+            lock.lock();
+            runPlanner_ = false;
+            lock.unlock();
+
+            as_->setAborted(move_base_msgs::MoveBaseResult(), "Failed to pass global plan to the controller.");
+            return true;
+        }
+        ......
+    }
+\end{verbatim}
+
+接下来对$MoveBase$状态进行判断，可能会有以下几种结果：
+
+\begin{itemize}
+    \item $PLANNING$：全局规划还没完成，还没得到一个全局路线，那么唤醒一个全局规划线程去制定全局路线；
+    \item $CONTROLLING$：全局规划成功，得到全局路线，这里进行真正的局部规划；
+    \item $CLEARING$：全局规划失败，进入恢复行为。
+\end{itemize}
+
+接下来分别解析这三种情况下的处理操作，若$status\_=PLANNING$：
+
+\begin{verbatim}
+    //PLANNING：全局规划还没完成，还没得到一个全局路线，那么唤醒一个全局规划线程去制定全局路线
+    case PLANNING:
+      {
+        boost::recursive_mutex::scoped_lock lock(planner_mutex_);
+        runPlanner_ = true;
+        planner_cond_.notify_one();
+      }
+      ROS_DEBUG_NAMED("move_base","Waiting for plan, in the planning state.");
+      break;
+\end{verbatim}
+
+若$status\_=CONTROLLING$：
+
+这里进行真正的局部规划，再次分为几种情况讨论：
+
+\begin{itemize}
+    \item 这里进行真正的局部规划；
+    \item 如果没到终点，检查机器人是否被困住，如果是，则进入恢复行为；
+    \item 如果没到终点，且状态正常，调用局部规划器实例$tc\_->computeVelocityCommands(cmd\_vel)$函数，它根据结合传入的全局规划路线和其他因素计算得出局部规划结果，即速度指令，存放在cmd\_vel中，将其发布，控制机器人运行。
+\end{itemize}
+
+\begin{verbatim}
+    //CONTROLLING：全局规划成功，得到全局路线，这里进行真正的局部规划：
+    case CONTROLLING:
+        ROS_DEBUG_NAMED("move_base","In controlling state.");
+
+        //如果已经位于终点，结束局部规划；
+        if(tc_->isGoalReached()){
+            ROS_DEBUG_NAMED("move_base","Goal reached!");
+            resetState();
+
+            boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
+            runPlanner_ = false;
+            lock.unlock();
+
+            as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
+            return true;
+        }
+
+        //如果机器人被困住，则进入恢复行为
+        if(oscillation_timeout_ > 0.0 &&
+            last_oscillation_reset_ + ros::Duration(oscillation_timeout_) < ros::Time::now()){
+            publishZeroVelocity();
+            state_ = CLEARING;
+            recovery_trigger_ = OSCILLATION_R;
+        }
+
+        {//如果没到终点 且状态正常
+            boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(controller_costmap_ros_->getCostmap()->getMutex()));
+
+            //局部规划器实例tc_被传入了全局规划后，调用computeVelocityCommands函数计算速度存储在cmd_vel中
+            if(tc_->computeVelocityCommands(cmd_vel)){
+                ROS_DEBUG_NAMED( "move_base", "Got a valid command from the local planner: %.3lf, %.3lf, %.3lf", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z );
+                //若成功计算速度，则说明本次局部规划成功， 将上一次有效局部控制的时间设为当前时间
+                last_valid_control_ = ros::Time::now();
+                //向底盘发送速度控制消息，一个循环只发一次速度命令
+                vel_pub_.publish(cmd_vel);
+                //如果恢复行为触发器值是局部规划失败，把索引置0
+                if(recovery_trigger_ == CONTROLLING_R)
+                    recovery_index_ = 0;
+            }
+            //若速度计算失败
+            else {
+                ROS_DEBUG_NAMED("move_base", "The local planner could not find a valid plan.");
+                //计算局部规划用时限制
+                ros::Time attempt_end = last_valid_control_ + ros::Duration(controller_patience_);
+
+                //若局部规划用时超过限制
+                if(ros::Time::now() > attempt_end){
+                    //发布0速度，进入恢复行为，触发器置为局部规划失败
+                    publishZeroVelocity();
+                    state_ = CLEARING;
+                    recovery_trigger_ = CONTROLLING_R;
+                }
+                //若局部规划用时没超过限制 那就是找不到有效的控制路线（局部规划路线），则再次回到全局规划
+                else{
+                    last_valid_plan_ = ros::Time::now();
+                    planning_retries_ = 0;
+                    state_ = PLANNING;
+                    publishZeroVelocity();
+
+                    //激活全局规划线程
+                    boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
+                    runPlanner_ = true;
+                    planner_cond_.notify_one();
+                    lock.unlock();
+                }
+            }
+        }
+    break;
+\end{verbatim}
+
+若$status\_=CLEARING$：
+
+\begin{verbatim}
+    case CLEARING:
+        ROS_DEBUG_NAMED("move_base","In clearing/recovery state");
+        //如果允许使用恢复行为，且恢复行为索引值小于恢复行为数组的大小
+        if(recovery_behavior_enabled_ && recovery_index_ < recovery_behaviors_.size()){
+            ROS_DEBUG_NAMED("move_base_recovery","Executing behavior %u of %zu", recovery_index_+1, recovery_behaviors_.size());
+
+            move_base_msgs::RecoveryStatus msg;
+            msg.pose_stamped = current_position;
+            msg.current_recovery_number = recovery_index_;
+            msg.total_number_of_recoveries = recovery_behaviors_.size();
+            msg.recovery_behavior_name =  recovery_behavior_names_[recovery_index_];
+
+            //发布恢复行为的相关信息
+            recovery_status_pub_.publish(msg);
+
+            //开始恢复行为，在executeCycle的循环中一次次迭代恢复行为
+            recovery_behaviors_[recovery_index_]->runBehavior();
+
+            last_oscillation_reset_ = ros::Time::now();
+
+            //在恢复行为时不断尝试切换进入PLANNING模式，检查恢复行为是否产生了效果（使机器人脱困）
+            ROS_DEBUG_NAMED("move_base_recovery","Going back to planning state");
+            last_valid_plan_ = ros::Time::now();
+            planning_retries_ = 0;
+            state_ = PLANNING;
+
+            recovery_index_++;
+        }
+        //若没有可用的恢复行为或所有恢复行为均无效
+        else{
+            //关闭全局规划器并反馈信息
+
+            if(recovery_trigger_ == CONTROLLING_R){
+                //报错信息
+            }
+            //找不到可行的全局规划策略
+            else if(recovery_trigger_ == PLANNING_R){
+                //报错信息
+            }
+            //机器人无法摆脱振荡状态
+            else if(recovery_trigger_ == OSCILLATION_R){
+                //报错信息
+            }
+            resetState();
+            return true;
+        }
+    break;
+\end{verbatim}
+
+\subsubsection{MoveBase::reconfigureCB}
+
+该函数自动从参数服务器上读取修改的参数，并且进行一些参数变换的中间过渡处理（如$base\_global\_planner$规划插件变化）。
+
+支持在参数服务器上直接设置\textbf{恢复默认参数}操作：
+
+\begin{verbatim}
+    //如果在参数服务器上设置了恢复默认参数
+    if(config.restore_defaults) {
+        config = default_config_;
+        config.restore_defaults = false;
+    }
+\end{verbatim}
+
+如果在中途切换全局规划器$base\_global\_planner$插件，则需要进行一些过渡过程（切换局部规划器插件同理）：
+
+\begin{verbatim}
+    //全局规划器改变
+    if(config.base_global_planner != last_config_.base_global_planner) {
+        boost::shared_ptr<nav_core::BaseGlobalPlanner> old_planner = planner_;
+        ROS_INFO("Loading global planner %s", config.base_global_planner.c_str());
+        try {
+            //initialize the global planner
+            planner_ = bgp_loader_.createInstance(config.base_global_planner);
+
+            //等待当前的规划器完成本次的规划
+            boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
+
+            //先清除规划器中的现有数据，并复位系统，再初始化新的规划器
+            planner_plan_->clear();
+            latest_plan_->clear();
+            controller_plan_->clear();
+            resetState();
+
+            planner_->initialize(bgp_loader_.getName(config.base_global_planner), planner_costmap_ros_);
+
+            lock.unlock();
+        } catch (const pluginlib::PluginlibException& ex) {
+            ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", config.base_global_planner.c_str(), ex.what());
+            //如果切换过程中出现问题了，就退回之前的规划器
+            planner_ = old_planner;
+            config.base_global_planner = last_config_.base_global_planner;
+        }
+    }
+\end{verbatim}
+
+\subsubsection{MoveBase::planService}
+
+提供给使用者一种指定goal的路径规划服务（在这种服务下如果无法达到goal 会自动搜索终点容许误差范围内的可达到点作为终点）。
+
+一般需要使用者没有指定一个机器人的起始位姿，如果没有指定（空的frame-id表示没有指定），则使用机器人的当前位姿：
+
+\begin{verbatim}
+    if(req.start.header.frame_id.empty()){
+        geometry_msgs::PoseStamped global_pose;
+        if(!getRobotPose(global_pose, planner_costmap_ros_)){
+          ROS_ERROR("move_base cannot make a plan for you because it could not get the start pose of the robot");
+          return false;
+        }
+        start = global_pose;
+    }
+    //若指定了起始位姿
+    else{ 
+        start = req.start;
+    }
+\end{verbatim}
+
+首先会尝试直接以使用者指定的目标点为终点进行路径规划，如果规划失败（$global\_plan$为空）,则在规定的误差范围内向外寻找可行的目标位置，算法会自动在允许的范围内逐渐扩大搜索的半径。并且当搜索到一个在目标附近的可达到的终点之后，可以选择（使用参数$make\_plan\_add\_unreachable\_goal\_$进行配置）将原本不可达到的目标点也放到$global\_plan$队列的末尾，因为有可能当我们达到其附近的可达到点之后，原本不可达到的目标点也可以达到了。
+
+实现算法如下：
+
+\begin{verbatim}
+    //first try to make a plan to the exact desired goal
+    std::vector<geometry_msgs::PoseStamped> global_plan;
+    if(!planner_->makePlan(start, req.goal, global_plan) || global_plan.empty()){
+      ROS_DEBUG_NAMED("move_base","Failed to find a plan to exact goal of (%.2f, %.2f), searching for a feasible goal within tolerance", req.goal.pose.position.x, req.goal.pose.position.y);
+
+      //在规定的误差范围内向外寻找可行的目标位置
+      geometry_msgs::PoseStamped p;
+      p = req.goal;
+      bool found_legal = false;
+      float resolution = planner_costmap_ros_->getCostmap()->getResolution();
+      float search_increment = resolution*3.0;
+      if(req.tolerance > 0.0 && req.tolerance < search_increment) search_increment = req.tolerance;
+      //在允许的范围内逐渐扩大搜索的半径
+      for(float max_offset = search_increment; max_offset <= req.tolerance && !found_legal; max_offset += search_increment){
+        for(float y_offset = 0; y_offset <= max_offset && !found_legal; y_offset += search_increment) {
+          for(float x_offset = 0; x_offset <= max_offset && !found_legal; x_offset += search_increment) {
+
+            //don't search again inside the current outer layer
+            if(x_offset < max_offset-1e-9 && y_offset < max_offset-1e-9) continue;
+
+            //search to both sides of the desired goal
+            for(float y_mult = -1.0; y_mult <= 1.0 + 1e-9 && !found_legal; y_mult += 2.0) {
+
+              //if one of the offsets is 0, -1*0 is still 0 (so get rid of one of the two)
+              if(y_offset < 1e-9 && y_mult < -1.0 + 1e-9) continue;
+
+              for(float x_mult = -1.0; x_mult <= 1.0 + 1e-9 && !found_legal; x_mult += 2.0) {
+                if(x_offset < 1e-9 && x_mult < -1.0 + 1e-9) continue;
+
+                p.pose.position.y = req.goal.pose.position.y + y_offset * y_mult;
+                p.pose.position.x = req.goal.pose.position.x + x_offset * x_mult;
+
+                if(planner_->makePlan(start, p, global_plan)){
+                  if(!global_plan.empty()){
+                    //选择是否将原本不可达到的目标点也放到global_plan队列的末尾
+                    if (make_plan_add_unreachable_goal_) {
+                      //adding the (unreachable) original goal to the end of the global plan, in case the local planner can get you there
+                      //(the reachable goal should have been added by the global planner)
+                      global_plan.push_back(req.goal);
+                    }
+
+                    found_legal = true;
+                    ROS_DEBUG_NAMED("move_base", "Found a plan to point (%.2f, %.2f)", p.pose.position.x, p.pose.position.y);
+                    break;
+                  }
+                }
+                else{
+                  ROS_DEBUG_NAMED("move_base","Failed to find a plan to point (%.2f, %.2f)", p.pose.position.x, p.pose.position.y);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+\end{verbatim}
+
+\subsubsection{MoveBase::loadRecoveryBehaviors}
+
+加载恢复行为插件 可以自行指定恢复行为列表，如果指定的插件加载过程中没有问题，则该函数会将插件依次添加到恢复行为列表中，当机器人进入恢复行为后，就会依次轮询列表中的恢复行为，帮助机器人脱困。如果没有指定或者指定有误，则加载默认的恢复行为。
+
+\subsubsection{MoveBase::loadDefaultRecoveryBehaviors}
+
+加载默认的恢复行为插件，默认的恢复行为如下：
+
+\begin{itemize}
+    \item [-] 保守的空间清理操作——$conservative\_reset$
+    \item [-] 自转——$rotate\_recovery$
+    \item [-] 激进的空间清理操作——$aggressive\_reset$
+    \item [-] 再次自转——$rotate\_recovery$
+\end{itemize}
+
+\section{navfn源码学习}
+
+$Movebase$使用的全局规划器默认为$NavFn$，默认使用$Dijkstra$算法，在地图上的起始点和目标点间规划出一条最优路径，供局部规划器具体导航使用。NavFn的源码中实际上有基于$Dijkstra$的$A*$规划算法的函数，但早期NavFn包中的$A*$有bug，没有处理，后来发布了$global\_planner$，修改好了$A*$的部分。所以一般默认$Dijkstra$算法在$NavFn$中，$A*$算法在$global\_planner$中。
+
+\subsection{Dijkstra算法原理}
+
+设$G=(V,E)$是一个带权有向图，把图中顶点集合$V$分成两组，第一组为已求出最短路径的顶点集合（用$S$表示，初始时$S$中只有一个源点，以后每求得一条最短路径 , 就将加入到集合$S$中，直到全部顶点都加入到$S$中，算法就结束了），第二组为其余未确定最短路径的顶点集合（用$U$表示），按最短路径长度的递增次序依次把第二组的顶点加入$S$中。在加入的过程中，总保持从源点$v$到$S$中各顶点的最短路径长度不大于从源点$v$到$U$中任何顶点的最短路径长度。此外，每个顶点对应一个距离，$S$中的顶点的距离就是从$v$到此顶点的最短路径长度，$U$中的顶点的距离，是从$v$到此顶点只包括$S$中的顶点为中间顶点的当前最短路径长度。
+
+具体理解过程参照博客：
+
+\url{https://www.cnblogs.com/yutian-blogs/p/15605767.html}
+
 \section{amcl源码学习}
+
+
+
 
 
 
