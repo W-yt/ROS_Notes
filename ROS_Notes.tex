@@ -3483,10 +3483,10 @@ $Movebase$使用的全局规划器默认为$NavFn$，默认使用$Dijkstra$算�
 
 \subsection{整体结构图}
 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=1.0\linewidth]{image/navfn.png}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{image/navfn.png}
+\end{figure}
 
 Movebase使用的全局规划器默认为NavFn，默认使用Dijkstra算法，在地图上的起始点和目标点间规划出一条最优路径，供局部规划器具体导航使用。NavFn的源码中实际上是有A*规划算法的函数的，但早期NavFn包中的A*有bug，没有处理，后来发布了global\_planner，在global\_planner包中修改好了A*的部分。
 
