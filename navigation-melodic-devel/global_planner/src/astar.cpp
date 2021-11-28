@@ -44,8 +44,9 @@ AStarExpansion::AStarExpansion(PotentialCalculator* p_calc, int xs, int ys) :
         Expander(p_calc, xs, ys) {
 }
 
-bool AStarExpansion::calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y,
-                                        int cycles, float* potential) {
+bool AStarExpansion::calculatePotentials(unsigned char* costs, 
+                                         double start_x, double start_y, double end_x, double end_y,
+                                         int cycles, float* potential) {
     queue_.clear();
     int start_i = toIndex(start_x, start_y);
     queue_.push_back(Index(start_i, 0));
@@ -72,12 +73,13 @@ bool AStarExpansion::calculatePotentials(unsigned char* costs, double start_x, d
 
         cycle++;
     }
-
     return false;
 }
 
-void AStarExpansion::add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x,
-                         int end_y) {
+void AStarExpansion::add(unsigned char* costs, 
+                         float* potential, float prev_potential, 
+                         int next_i, 
+                         int end_x, int end_y) {
     if (next_i < 0 || next_i >= ns_)
         return;
 
@@ -95,4 +97,4 @@ void AStarExpansion::add(unsigned char* costs, float* potential, float prev_pote
     std::push_heap(queue_.begin(), queue_.end(), greater1());
 }
 
-} //end namespace global_planner
+}

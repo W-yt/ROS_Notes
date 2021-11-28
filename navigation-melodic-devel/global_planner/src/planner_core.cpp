@@ -72,6 +72,7 @@ GlobalPlanner::GlobalPlanner() :
         potential_array_(NULL) {
 }
 
+//构造函数只是调用initialize进行初始化
 GlobalPlanner::GlobalPlanner(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) :
         GlobalPlanner() {
     //initialize the planner
@@ -210,39 +211,36 @@ bool GlobalPlanner::worldToMap(double wx, double wy, double& mx, double& my) {
     return false;
 }
 
-bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                           std::vector<geometry_msgs::PoseStamped>& plan) {
+bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,std::vector<geometry_msgs::PoseStamped>& plan) {
     return makePlan(start, goal, default_tolerance_, plan);
 }
 
-bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                           double tolerance, std::vector<geometry_msgs::PoseStamped>& plan) {
+bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, 
+                             const geometry_msgs::PoseStamped& goal,
+                             double tolerance, 
+                             std::vector<geometry_msgs::PoseStamped>& plan) {
     boost::mutex::scoped_lock lock(mutex_);
     if (!initialized_) {
-        ROS_ERROR(
-                "This planner has not been initialized yet, but it is being used, please call initialize() before use");
+        ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
         return false;
     }
 
-    //clear the plan, just in case
     plan.clear();
 
     ros::NodeHandle n;
     std::string global_frame = frame_id_;
 
-    //until tf can handle transforming things that are way in the past... we'll require the goal to be in our global frame
+    //确保目标点goal和起始点start在global坐标系下
     if (goal.header.frame_id != global_frame) {
-        ROS_ERROR(
-                "The goal pose passed to this planner must be in the %s frame.  It is instead in the %s frame.", global_frame.c_str(), goal.header.frame_id.c_str());
+        ROS_ERROR("The goal pose passed to this planner must be in the %s frame.  It is instead in the %s frame.", global_frame.c_str(), goal.header.frame_id.c_str());
         return false;
     }
-
     if (start.header.frame_id != global_frame) {
-        ROS_ERROR(
-                "The start pose passed to this planner must be in the %s frame.  It is instead in the %s frame.", global_frame.c_str(), start.header.frame_id.c_str());
+        ROS_ERROR("The start pose passed to this planner must be in the %s frame.  It is instead in the %s frame.", global_frame.c_str(), start.header.frame_id.c_str());
         return false;
     }
 
+    //将起始点start转换到map坐标系下(则可以使用map中的cell来表示坐标)
     double wx = start.pose.position.x;
     double wy = start.pose.position.y;
 
@@ -250,8 +248,7 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     double start_x, start_y, goal_x, goal_y;
 
     if (!costmap_->worldToMap(wx, wy, start_x_i, start_y_i)) {
-        ROS_WARN(
-                "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has been properly localized?");
+        ROS_WARN("The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has been properly localized?");
         return false;
     }
     if(old_navfn_behavior_){
@@ -261,12 +258,12 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
         worldToMap(wx, wy, start_x, start_y);
     }
 
+    //将目标点goal转换到map坐标系下(则可以使用map中的cell来表示坐标)
     wx = goal.pose.position.x;
     wy = goal.pose.position.y;
 
     if (!costmap_->worldToMap(wx, wy, goal_x_i, goal_y_i)) {
-        ROS_WARN_THROTTLE(1.0,
-                "The goal sent to the global planner is off the global costmap. Planning will always fail to this goal.");
+        ROS_WARN_THROTTLE(1.0,"The goal sent to the global planner is off the global costmap. Planning will always fail to this goal.");
         return false;
     }
     if(old_navfn_behavior_){
@@ -276,32 +273,36 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
         worldToMap(wx, wy, goal_x, goal_y);
     }
 
-    //clear the starting cell within the costmap because we know it can't be an obstacle
+    //将起始点设置为FREE(肯定没有障碍物)
     clearRobotCell(start, start_x_i, start_y_i);
 
-    int nx = costmap_->getSizeInCellsX(), ny = costmap_->getSizeInCellsY();
-
-    //make sure to resize the underlying array that Navfn uses
+    //分配空间(大小和costmap_一样大)
+    int nx = costmap_->getSizeInCellsX();
+    int ny = costmap_->getSizeInCellsY();
     p_calc_->setSize(nx, ny);
     planner_->setSize(nx, ny);
     path_maker_->setSize(nx, ny);
     potential_array_ = new float[nx * ny];
 
+    //封闭地图四周，以防产生边界以外的轨迹(相对navfn封装地更好)
     if(outline_map_)
         outlineMap(costmap_->getCharMap(), nx, ny, costmap_2d::LETHAL_OBSTACLE);
 
-    bool found_legal = planner_->calculatePotentials(costmap_->getCharMap(), start_x, start_y, goal_x, goal_y,
-                                                    nx * ny * 2, potential_array_);
+    //计算potential值(planner_指针指向A*或Dijkstrta算法类 调用其各自的calculatePotentials函数)
+    bool found_legal = planner_->calculatePotentials(costmap_->getCharMap(), 
+                                                     start_x, start_y, goal_x, goal_y,
+                                                     nx * ny * 2, potential_array_);
 
     if(!old_navfn_behavior_)
         planner_->clearEndpoint(costmap_->getCharMap(), potential_array_, goal_x_i, goal_y_i, 2);
     if(publish_potential_)
         publishPotential(potential_array_);
 
+    //如果在calculatePotentials中找到了合法的目标点
     if (found_legal) {
-        //extract the plan
+        //根据pot数组获取路径规划结果plan(调用函数getPath 这个函数也有两种实现方式)
         if (getPlanFromPotential(start_x, start_y, goal_x, goal_y, goal, plan)) {
-            //make sure the goal we push on has the same timestamp as the rest of the plan
+            //确保目标点和其余点有相同的时间戳
             geometry_msgs::PoseStamped goal_copy = goal;
             goal_copy.header.stamp = ros::Time::now();
             plan.push_back(goal_copy);
@@ -312,7 +313,7 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
         ROS_ERROR("Failed to get a plan.");
     }
 
-    // add orientations if needed
+    //添加方向信息
     orientation_filter_->processPath(start, plan);
 
     //publish the plan for visualization purposes
@@ -323,8 +324,7 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
 
 void GlobalPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& path) {
     if (!initialized_) {
-        ROS_ERROR(
-                "This planner has not been initialized yet, but it is being used, please call initialize() before use");
+        ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
         return;
     }
 
@@ -343,18 +343,14 @@ void GlobalPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& p
     plan_pub_.publish(gui_path);
 }
 
-bool GlobalPlanner::getPlanFromPotential(double start_x, double start_y, double goal_x, double goal_y,
-                                      const geometry_msgs::PoseStamped& goal,
-                                       std::vector<geometry_msgs::PoseStamped>& plan) {
+bool GlobalPlanner::getPlanFromPotential(double start_x, double start_y, double goal_x, double goal_y, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan) {
     if (!initialized_) {
-        ROS_ERROR(
-                "This planner has not been initialized yet, but it is being used, please call initialize() before use");
+        ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
         return false;
     }
 
     std::string global_frame = frame_id_;
 
-    //clear the plan, just in case
     plan.clear();
 
     std::vector<std::pair<float, float> > path;
@@ -367,7 +363,7 @@ bool GlobalPlanner::getPlanFromPotential(double start_x, double start_y, double 
     ros::Time plan_time = ros::Time::now();
     for (int i = path.size() -1; i>=0; i--) {
         std::pair<float, float> point = path[i];
-        //convert the plan to world coordinates
+        //路径规划的结果转换到世界坐标系
         double world_x, world_y;
         mapToWorld(point.first, point.second, world_x, world_y);
 
@@ -384,7 +380,7 @@ bool GlobalPlanner::getPlanFromPotential(double start_x, double start_y, double 
         plan.push_back(pose);
     }
     if(old_navfn_behavior_){
-            plan.push_back(goal);
+        plan.push_back(goal);
     }
     return !plan.empty();
 }

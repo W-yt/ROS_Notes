@@ -52,49 +52,60 @@ using cm::Costmap2DROS;
 
 namespace global_planner {
 
-class PlannerWithCostmap : public GlobalPlanner {
-    public:
-        PlannerWithCostmap(string name, Costmap2DROS* cmap);
-        bool makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp);
+    //PlannerWithCostmap类继承自GlobalPlanner类（在planner_core中）
+    class PlannerWithCostmap : public GlobalPlanner {
+        public:
+            PlannerWithCostmap(string name, Costmap2DROS* cmap);
+            bool makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp);
 
-    private:
-        void poseCallback(const rm::PoseStamped::ConstPtr& goal);
-        Costmap2DROS* cmap_;
-        ros::ServiceServer make_plan_service_;
-        ros::Subscriber pose_sub_;
-};
+        private:
+            void poseCallback(const rm::PoseStamped::ConstPtr& goal);
+            Costmap2DROS* cmap_;
+            ros::ServiceServer make_plan_service_;
+            ros::Subscriber pose_sub_;
+    };
 
-bool PlannerWithCostmap::makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp) {
-    vector<PoseStamped> path;
+    //这是plan_service服务的相应函数
+    //该线程提供plan_service，一旦由请求，就调用bool success = makePlan(req.start, req.goal, path);
+    bool PlannerWithCostmap::makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp) {
+        vector<PoseStamped> path;
 
-    req.start.header.frame_id = "map";
-    req.goal.header.frame_id = "map";
-    bool success = makePlan(req.start, req.goal, path);
-    resp.plan_found = success;
-    if (success) {
-        resp.path = path;
+        req.start.header.frame_id = "map";
+        req.goal.header.frame_id = "map";
+        bool success = makePlan(req.start, req.goal, path);
+        resp.plan_found = success;
+        if (success) {
+            resp.path = path;
+        }
+
+        return true;
     }
 
-    return true;
-}
+    //这是goal话题的回调函数
+    //该线程是去订阅goal，拿到goal之后，就调用makePlan(start, *goal, path);
+    void PlannerWithCostmap::poseCallback(const rm::PoseStamped::ConstPtr& goal) {
+        geometry_msgs::PoseStamped global_pose;
+        cmap_->getRobotPose(global_pose);
+        vector<PoseStamped> path;
+        makePlan(global_pose, *goal, path);
+    }
 
-void PlannerWithCostmap::poseCallback(const rm::PoseStamped::ConstPtr& goal) {
-    geometry_msgs::PoseStamped global_pose;
-    cmap_->getRobotPose(global_pose);
-    vector<PoseStamped> path;
-    makePlan(global_pose, *goal, path);
-}
+    //构造函数
+    PlannerWithCostmap::PlannerWithCostmap(string name, Costmap2DROS* cmap) :
+            GlobalPlanner(name, cmap->getCostmap(), cmap->getGlobalFrameID()) {
+        ros::NodeHandle private_nh("~");
+        cmap_ = cmap;
 
-PlannerWithCostmap::PlannerWithCostmap(string name, Costmap2DROS* cmap) :
-        GlobalPlanner(name, cmap->getCostmap(), cmap->getGlobalFrameID()) {
-    ros::NodeHandle private_nh("~");
-    cmap_ = cmap;
-    make_plan_service_ = private_nh.advertiseService("make_plan", &PlannerWithCostmap::makePlanService, this);
-    pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal", 1, &PlannerWithCostmap::poseCallback, this);
-}
+        //开启了两个线程：相当于是有两种方式去开启global_planner的规划（一种是服务请求，一种是发布目标goal话题）
 
-} // namespace
+        //第一个线程提供plan_service，一旦由请求，就调用bool success = makePlan(req.start, req.goal, path);
+        make_plan_service_ = private_nh.advertiseService("make_plan", &PlannerWithCostmap::makePlanService, this);
+        //第二个线程是去订阅goal，拿到goal之后，就调用makePlan(start, *goal, path);
+        pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal", 1, &PlannerWithCostmap::poseCallback, this);
+    }
+} 
 
+//planner部分的入口
 int main(int argc, char** argv) {
     ros::init(argc, argv, "global_planner");
 
@@ -103,6 +114,7 @@ int main(int argc, char** argv) {
 
     costmap_2d::Costmap2DROS lcr("costmap", buffer);
 
+    //需要一个costmap，传递给planner进行初始化
     global_planner::PlannerWithCostmap pppp("planner", &lcr);
 
     ros::spin();
