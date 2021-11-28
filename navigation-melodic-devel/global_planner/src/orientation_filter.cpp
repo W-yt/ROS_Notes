@@ -49,6 +49,8 @@ void set_angle(geometry_msgs::PoseStamped* pose, double angle)
   tf2::convert(q, pose->pose.orientation);
 }
 
+//OrientationFilter可以理解为给path“顺毛”
+//因为A*算法规划的path只能保证路线的连续性，还要保证拐弯的角度别变得太快
 void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start, 
                                     std::vector<geometry_msgs::PoseStamped>& path)
 {
@@ -104,8 +106,7 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
     }
 }
     
-void OrientationFilter::setAngleBasedOnPositionDerivative(std::vector<geometry_msgs::PoseStamped>& path, int index)
-{
+void OrientationFilter::setAngleBasedOnPositionDerivative(std::vector<geometry_msgs::PoseStamped>& path, int index){
   int index0 = std::max(0, index - window_size_);
   int index1 = std::min((int)path.size() - 1, index + window_size_);
 
@@ -119,8 +120,7 @@ void OrientationFilter::setAngleBasedOnPositionDerivative(std::vector<geometry_m
 }
 
 void OrientationFilter::interpolate(std::vector<geometry_msgs::PoseStamped>& path, 
-                                    int start_index, int end_index)
-{
+                                    int start_index, int end_index){
     const double start_yaw = tf2::getYaw(path[start_index].pose.orientation),
                  end_yaw   = tf2::getYaw(path[end_index  ].pose.orientation);
     double diff = angles::shortest_angular_distance(start_yaw, end_yaw);
@@ -131,5 +131,4 @@ void OrientationFilter::interpolate(std::vector<geometry_msgs::PoseStamped>& pat
     }
 }
                                    
-
 };

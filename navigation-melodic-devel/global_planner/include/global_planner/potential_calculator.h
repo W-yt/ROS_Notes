@@ -40,43 +40,47 @@
 
 #include <algorithm>
 
+//calculatePotential()计算根据use_quadratic的值有下面两个选择:
+//  若为TRUE  则使用二次曲线计算
+//  若为False 则采用简单方法计算
+//简单方法即：return prev_potential + cost
+//  即：costs[next_i] + neutral_cost_+ prev_potential)
+//  翻译：地图代价+单格距离代价(初始化为50)+之前路径代价g
+
 namespace global_planner {
 
-class PotentialCalculator {
-    public:
-        PotentialCalculator(int nx, int ny) {
-            setSize(nx, ny);
-        }
-
-        virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential=-1){
-            if(prev_potential < 0){
-                // get min of neighbors
-                float min_h = std::min( potential[n - 1], potential[n + 1] ),
-                      min_v = std::min( potential[n - nx_], potential[n + nx_]);
-                prev_potential = std::min(min_h, min_v);
+    class PotentialCalculator {
+        public:
+            PotentialCalculator(int nx, int ny) {
+                setSize(nx, ny);
             }
 
-            return prev_potential + cost;
-        }
+            virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential=-1){
+                //如果父节点的pot值小于0(调用时没有赋值 使用了缺省值-1)
+                //(在函数clearEndpoint中会出现这种缺省调用的情况)
+                if(prev_potential < 0){
+                    //则将周围四个点的pot的最小值当做父节点的pot值
+                    float min_h = std::min(potential[n - 1], potential[n + 1])；
+                    float min_v = std::min(potential[n - nx_], potential[n + nx_]);
+                    prev_potential = std::min(min_h, min_v);
+                }
 
-        /**
-         * @brief  Sets or resets the size of the map
-         * @param nx The x size of the map
-         * @param ny The y size of the map
-         */
-        virtual void setSize(int nx, int ny) {
-            nx_ = nx;
-            ny_ = ny;
-            ns_ = nx * ny;
-        } /**< sets or resets the size of the map */
+                return prev_potential + cost;
+            }
 
-    protected:
-        inline int toIndex(int x, int y) {
-            return x + nx_ * y;
-        }
+            virtual void setSize(int nx, int ny) {
+                nx_ = nx;
+                ny_ = ny;
+                ns_ = nx * ny;
+            }
 
-        int nx_, ny_, ns_; /**< size of grid, in pixels */
-};
+        protected:
+            inline int toIndex(int x, int y) {
+                return x + nx_ * y;
+            }
 
-} //end namespace global_planner
+            int nx_, ny_, ns_;
+    };
+
+}
 #endif

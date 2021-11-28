@@ -102,6 +102,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
 
         unsigned int cx = costmap->getSizeInCellsX(), cy = costmap->getSizeInCellsY();
 
+        //如果为true，则global_planner准确反映navfn的行为
         private_nh.param("old_navfn_behavior", old_navfn_behavior_, false);
         if(!old_navfn_behavior_)
             convert_offset_ = 0.5;
@@ -109,6 +110,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             convert_offset_ = 0.0;
 
         bool use_quadratic;
+        //如果为true，使用二次曲线逼近的方式计算pot值
         private_nh.param("use_quadratic", use_quadratic, true);
         if (use_quadratic)
             p_calc_ = new QuadraticCalculator(cx, cy);
@@ -116,9 +118,9 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             p_calc_ = new PotentialCalculator(cx, cy);
 
         bool use_dijkstra;
+        //如果为ture，则使用dijkstra算法；否则使用A *算法
         private_nh.param("use_dijkstra", use_dijkstra, true);
-        if (use_dijkstra)
-        {
+        if (use_dijkstra){
             DijkstraExpansion* de = new DijkstraExpansion(p_calc_, cx, cy);
             if(!old_navfn_behavior_)
                 de->setPreciseStart(true);
@@ -128,6 +130,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             planner_ = new AStarExpansion(p_calc_, cx, cy);
 
         bool use_grid_path;
+        //如果为true，沿着栅格边界创建路径；否则，使用梯度下降的方法
         private_nh.param("use_grid_path", use_grid_path, false);
         if (use_grid_path)
             path_maker_ = new GridPath(p_calc_);
@@ -139,10 +142,12 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
         plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
         potential_pub_ = private_nh.advertise<nav_msgs::OccupancyGrid>("potential", 1);
 
+        //指定是否允许路径规划器在未知空间创建路径规划
         private_nh.param("allow_unknown", allow_unknown_, true);
         planner_->setHasUnknown(allow_unknown_);
         private_nh.param("planner_window_x", planner_window_x_, 0.0);
         private_nh.param("planner_window_y", planner_window_y_, 0.0);
+        //路径规划器目标点的公差范围
         private_nh.param("default_tolerance", default_tolerance_, 0.0);
         private_nh.param("publish_scale", publish_scale_, 100);
         private_nh.param("outline_map", outline_map_, true);
@@ -172,8 +177,7 @@ void GlobalPlanner::reconfigureCB(global_planner::GlobalPlannerConfig& config, u
 
 void GlobalPlanner::clearRobotCell(const geometry_msgs::PoseStamped& global_pose, unsigned int mx, unsigned int my) {
     if (!initialized_) {
-        ROS_ERROR(
-                "This planner has not been initialized yet, but it is being used, please call initialize() before use");
+        ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
         return;
     }
 
@@ -288,7 +292,8 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start,
     if(outline_map_)
         outlineMap(costmap_->getCharMap(), nx, ny, costmap_2d::LETHAL_OBSTACLE);
 
-    //计算potential值(planner_指针指向A*或Dijkstrta算法类 调用其各自的calculatePotentials函数)
+    //计算potential值
+    //planner_指针指向A*或Dijkstrta算法类 调用其各自的calculatePotentials函数
     bool found_legal = planner_->calculatePotentials(costmap_->getCharMap(), 
                                                      start_x, start_y, goal_x, goal_y,
                                                      nx * ny * 2, potential_array_);
@@ -313,10 +318,10 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start,
         ROS_ERROR("Failed to get a plan.");
     }
 
-    //添加方向信息
+    //添加方向信息(给path“顺毛”保证拐弯的角度别变得太快)
     orientation_filter_->processPath(start, plan);
 
-    //publish the plan for visualization purposes
+    //发布plan
     publishPlan(plan);
     delete[] potential_array_;
     return !plan.empty();
@@ -426,4 +431,4 @@ void GlobalPlanner::publishPotential(float* potential)
     potential_pub_.publish(grid);
 }
 
-} //end namespace global_planner
+}

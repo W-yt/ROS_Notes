@@ -42,13 +42,14 @@
 
 namespace global_planner {
 
+//梯度下降算法实现路径获取的实现方式(与navfn中的实现相同)
+
     GradientPath::GradientPath(PotentialCalculator* p_calc) :
             Traceback(p_calc), pathStep_(0.5) {
         gradx_ = grady_ = NULL;
     }
 
     GradientPath::~GradientPath() {
-
         if (gradx_)
             delete[] gradx_;
         if (grady_)

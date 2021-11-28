@@ -75,16 +75,20 @@ class Expander {
         }
 
         void clearEndpoint(unsigned char* costs, float* potential, int gx, int gy, int s){
+            //默认s=2 遍历目标店附近5*5的cell
             int startCell = toIndex(gx, gy);
             for(int i=-s;i<=s;i++){
-            for(int j=-s;j<=s;j++){
-                int n = startCell+i+nx_*j;
-                if(potential[n]<POT_HIGH)
-                    continue;
-                float c = costs[n]+neutral_cost_;
-                float pot = p_calc_->calculatePotential(potential, c, n);
-                potential[n] = pot;
-            }
+                for(int j=-s;j<=s;j++){
+                    int n = startCell+i+nx_*j;
+                    if(potential[n]<POT_HIGH)
+                        continue;
+                    //如果遍历到的点的pot值仍然是POT_HIGH 则更新一下pot值
+                    //触发了calculatePotential函数中prev_potential<0的条件
+                    //会返回周围四个节点中最小的pot值+cost(赋值给potential[n])
+                    float c = costs[n]+neutral_cost_;
+                    float pot = p_calc_->calculatePotential(potential, c, n);
+                    potential[n] = pot;
+                }
             }
         }
 
@@ -102,5 +106,5 @@ class Expander {
 
 };
 
-} //end namespace global_planner
+}
 #endif

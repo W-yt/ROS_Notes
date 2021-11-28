@@ -39,6 +39,8 @@
 #include <algorithm>
 namespace global_planner {
 
+//基本与navfn相同的实现方式
+
 DijkstraExpansion::DijkstraExpansion(PotentialCalculator* p_calc, int nx, int ny) :
         Expander(p_calc, nx, ny), pending_(NULL), precise_(false) {
     // priority buffers
@@ -209,12 +211,7 @@ inline void DijkstraExpansion::updateCell(unsigned char* costs, float* potential
         //ROS_INFO("UPDATE %d %d %d %f", n, n%nx, n/nx, potential[n]);
         if (pot < threshold_)    // low-cost buffer block
                 {
-            if (potential[n - 1] > pot + le)
-                push_next(n-1);
-            if (potential[n + 1] > pot + re)
-                push_next(n+1);
-            if (potential[n - nx_] > pot + ue)
-                push_next(n-nx_);
+            if (potential[n - 1] > fangshi
             if (potential[n + nx_] > pot + de)
                 push_next(n+nx_);
         } else            // overflow block

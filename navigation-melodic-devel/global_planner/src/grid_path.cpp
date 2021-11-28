@@ -40,7 +40,13 @@
 #include <stdio.h>
 namespace global_planner {
 
+//因为如A*算法已经完成了路径搜索的话，其实要获取路径只是需要从goal出发逆向走一遍就好了
+//所以这一部分要想实现很简单
+//但是这也只是一种简单的实现方式：创建一条沿着网格边界的路径
+//也可以采用梯度下降法，使用与navfn中相同的梯度下降算法实现方式
+
 bool GridPath::getPath(float* potential, double start_x, double start_y, double end_x, double end_y, std::vector<std::pair<float, float> >& path) {
+    //将goal的坐标放入current中
     std::pair<float, float> current;
     current.first = end_x;
     current.second = end_y;
@@ -54,6 +60,7 @@ bool GridPath::getPath(float* potential, double start_x, double start_y, double 
     while (getIndex(current.first, current.second) != start_index) {
         float min_val = 1e10;
         int min_x = 0, min_y = 0;
+        //从周围的8个点中寻找pot值最小的点
         for (int xd = -1; xd <= 1; xd++) {
             for (int yd = -1; yd <= 1; yd++) {
                 if (xd == 0 && yd == 0)
@@ -67,13 +74,14 @@ bool GridPath::getPath(float* potential, double start_x, double start_y, double 
                 }
             }
         }
-        if (min_x == 0 && min_y == 0)
+        if(min_x == 0 && min_y == 0)
             return false;
         current.first = min_x;
         current.second = min_y;
         path.push_back(current);
         
-        if(c++>ns*4){
+        //设置了一个循环次数的上限
+        if(c++ > ns*4){
             return false;
         }
 
