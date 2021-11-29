@@ -85,17 +85,20 @@ namespace base_local_planner {
       initialize(name, tf, costmap_ros);
   }
 
-  void TrajectoryPlannerROS::initialize(
-      std::string name,
-      tf2_ros::Buffer* tf,
-      costmap_2d::Costmap2DROS* costmap_ros){
+  //这个函数的主要工作是从参数服务器下载参数值给局部规划器赋参
+  //首先设置全局和本地规划结果的发布，并用传入的参数costmap_ros来初始化本地规划器用到的代价地图
+  //costmap_ros格式为Costmap2DROS：ROS的地图封装类，它整合了静态层、障碍层、膨胀层地图
+  void TrajectoryPlannerROS::initialize(std::string name,
+                                        tf2_ros::Buffer* tf,
+                                        costmap_2d::Costmap2DROS* costmap_ros){
     if (! isInitialized()) {
-
       ros::NodeHandle private_nh("~/" + name);
+      //发布全局规划在~/本地规划器名称/global_plan话题上
       g_plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
+      //发布本地规划在~/本地规划器名称/local_plan话题上
       l_plan_pub_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
 
-
+      //初始化tf、局部代价地图
       tf_ = tf;
       costmap_ros_ = costmap_ros;
       rot_stopped_velocity_ = 1e-2;
@@ -111,32 +114,31 @@ namespace base_local_planner {
       std::string world_model_type;
       rotating_to_goal_ = false;
 
-      //initialize the copy of the costmap the controller will use
+      //复制一个代价地图供本地规划器使用
       costmap_ = costmap_ros_->getCostmap();
 
-
+      //地图坐标系
       global_frame_ = costmap_ros_->getGlobalFrameID();
+      //机器人底盘坐标系
       robot_base_frame_ = costmap_ros_->getBaseFrameID();
-      private_nh.param("prune_plan", prune_plan_, true);
 
-      private_nh.param("yaw_goal_tolerance", yaw_goal_tolerance_, 0.05);
-      private_nh.param("xy_goal_tolerance", xy_goal_tolerance_, 0.10);
-      private_nh.param("acc_lim_x", acc_lim_x_, 2.5);
-      private_nh.param("acc_lim_y", acc_lim_y_, 2.5);
-      private_nh.param("acc_lim_theta", acc_lim_theta_, 3.2);
+      //从参数服务器下载参数
+      private_nh.param("prune_plan", prune_plan_, true);
+      private_nh.param("yaw_goal_tolerance", yaw_goal_tolerance_, 0.05);//角速度误差范围
+      private_nh.param("xy_goal_tolerance", xy_goal_tolerance_, 0.10);//线速度误差范围
+      private_nh.param("acc_lim_x", acc_lim_x_, 2.5);//y向线加速度阈值
+      private_nh.param("acc_lim_y", acc_lim_y_, 2.5);//y向线加速度阈值(非柔性机器人用不到，没有y方向速度)
+      private_nh.param("acc_lim_theta", acc_lim_theta_, 3.2);//角加速度阈值
 
       private_nh.param("stop_time_buffer", stop_time_buffer, 0.2);
 
       private_nh.param("latch_xy_goal_tolerance", latch_xy_goal_tolerance_, false);
 
-      //Since I screwed up nicely in my documentation, I'm going to add errors
-      //informing the user if they've set one of the wrong parameters
+      //设置参数名称错误
       if(private_nh.hasParam("acc_limit_x"))
         ROS_ERROR("You are using acc_limit_x where you should be using acc_lim_x. Please change your configuration files appropriately. The documentation used to be wrong on this, sorry for any confusion.");
-
       if(private_nh.hasParam("acc_limit_y"))
         ROS_ERROR("You are using acc_limit_y where you should be using acc_lim_y. Please change your configuration files appropriately. The documentation used to be wrong on this, sorry for any confusion.");
-
       if(private_nh.hasParam("acc_limit_th"))
         ROS_ERROR("You are using acc_limit_th where you should be using acc_lim_th. Please change your configuration files appropriately. The documentation used to be wrong on this, sorry for any confusion.");
 
@@ -146,8 +148,7 @@ namespace base_local_planner {
       std::string controller_frequency_param_name;
       if(!private_nh.searchParam("controller_frequency", controller_frequency_param_name))
         sim_period_ = 0.05;
-      else
-      {
+      else{
         double controller_frequency = 0;
         private_nh.param(controller_frequency_param_name, controller_frequency, 20.0);
         if(controller_frequency > 0)
@@ -160,12 +161,15 @@ namespace base_local_planner {
       }
       ROS_INFO("Sim period is set to %.2f", sim_period_);
 
+      //与一步计算的仿真时间有关参数
       private_nh.param("sim_time", sim_time, 1.0);
       private_nh.param("sim_granularity", sim_granularity, 0.025);
       private_nh.param("angular_sim_granularity", angular_sim_granularity, sim_granularity);
+      //速度计算时在线速度和角速度范围内生成的样本数
       private_nh.param("vx_samples", vx_samples, 3);
       private_nh.param("vtheta_samples", vtheta_samples, 20);
 
+      //在计算局部路线cost时将路线、目标、障碍因子对应的加和比例
       path_distance_bias = nav_core::loadParameterWithDeprecation(private_nh,
                                                                   "path_distance_bias",
                                                                   "pdist_scale",
@@ -176,12 +180,10 @@ namespace base_local_planner {
                                                                   0.6);
       // values of the deprecated params need to be applied to the current params, as defaults 
       // of defined for dynamic reconfigure will override them otherwise.
-      if (private_nh.hasParam("pdist_scale") & !private_nh.hasParam("path_distance_bias"))
-      {
+      if (private_nh.hasParam("pdist_scale") & !private_nh.hasParam("path_distance_bias")){
         private_nh.setParam("path_distance_bias", path_distance_bias);
       }
-      if (private_nh.hasParam("gdist_scale") & !private_nh.hasParam("goal_distance_bias"))
-      {
+      if (private_nh.hasParam("gdist_scale") & !private_nh.hasParam("goal_distance_bias")){
         private_nh.setParam("goal_distance_bias", goal_distance_bias);
       }
 
@@ -194,7 +196,7 @@ namespace base_local_planner {
         private_nh.param("meter_scoring", meter_scoring, false);
 
         if(meter_scoring) {
-          //if we use meter scoring, then we want to multiply the biases by the resolution of the costmap
+          //如果使用meter_scoring，则将局部路径打分的比例因子×代价地图的分辨率
           double resolution = costmap_->getResolution();
           goal_distance_bias *= resolution;
           path_distance_bias *= resolution;
@@ -208,6 +210,7 @@ namespace base_local_planner {
       private_nh.param("escape_reset_dist", escape_reset_dist, 0.10);
       private_nh.param("escape_reset_theta", escape_reset_theta, M_PI_4);
       private_nh.param("holonomic_robot", holonomic_robot, true);
+      //机器人行动时的速度阈值
       private_nh.param("max_vel_x", max_vel_x, 0.5);
       private_nh.param("min_vel_x", min_vel_x, 0.1);
 
@@ -245,11 +248,13 @@ namespace base_local_planner {
       private_nh.param("point_grid/grid_resolution", grid_resolution, 0.2);
 
       ROS_ASSERT_MSG(world_model_type == "costmap", "At this time, only costmap world models are supported by this controller");
+      //初始化world_model_时，用的是CostmapModel类，它是WorldModel的派生类
       world_model_ = new CostmapModel(*costmap_);
       std::vector<double> y_vels = loadYVels(private_nh);
 
       footprint_spec_ = costmap_ros_->getRobotFootprint();
 
+      //创建TrajectoryPlanner类实例，它是TrajectoryPlannerROS类的成员
       tc_ = new TrajectoryPlanner(*world_model_, *costmap_, footprint_spec_,
           acc_lim_x_, acc_lim_y_, acc_lim_theta_, sim_time, sim_granularity, vx_samples, vtheta_samples, path_distance_bias,
           goal_distance_bias, occdist_scale, heading_lookahead, oscillation_reset_dist, escape_reset_dist, escape_reset_theta, holonomic_robot,
@@ -259,6 +264,7 @@ namespace base_local_planner {
       map_viz_.initialize(name, global_frame_, boost::bind(&TrajectoryPlanner::getCellCosts, tc_, _1, _2, _3, _4, _5, _6));
       initialized_ = true;
 
+      //开启动态参数配置
       dsrv_ = new dynamic_reconfigure::Server<BaseLocalPlannerConfig>(private_nh);
       dynamic_reconfigure::Server<BaseLocalPlannerConfig>::CallbackType cb = boost::bind(&TrajectoryPlannerROS::reconfigureCB, this, _1, _2);
       dsrv_->setCallback(cb);
@@ -372,9 +378,9 @@ namespace base_local_planner {
 
     cmd_vel.angular.z = 0.0;
     return false;
-
   }
 
+  //该函数的作用为传入全局规划
   bool TrajectoryPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan){
     if (! isInitialized()) {
       ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");

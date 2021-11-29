@@ -4336,7 +4336,7 @@ $nextP$和$overP$都来自从目标点开始传播的四周的$cell$，区别在
     \item [-] $orientation\_window\_size$：根据$orientation\_mode$指定的位置积分来得到使用窗口的方向.默认值1,可以动态重新配置
 \end{itemize}
 
-\section{plan\_node.cpp}
+\subsection{plan\_node.cpp}
 
 $plan\_node.cpp$文件中是一个$PlannerWithCostmap$类，它继承自$GlobalPlanner$类（在$planner\_core$中定义）。在这个类中，主要开启了两个线程，提供了两种方式去开启$global\_planner$的规划，一种是服务请求，一种是发布目标goal话题。这部分在该类的构造函数中实现，代码如下：
 
