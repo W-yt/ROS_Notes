@@ -955,4 +955,290 @@ File: image/navfn.png Graphic file (type bmp)
 <image/navfn.png>
  [83] [84]
 Overfull \hbox (11.66805pt too wide) in paragraph at lines 3519--3519
-[]    \TU/lmtt/m/n/9 planner_ = boost::shared_ptr<NavFn>(new NavFn(costmap_->ge
+[]    \TU/lmtt/m/n/9 planner_ = boost::shared_ptr<NavFn>(new NavFn(costmap_->getSizeInCellsX(), costmap_->getSi[] 
+ []
+
+[85]
+Overfull \hbox (9.31001pt too wide) in paragraph at lines 3602--3602
+[]            \TU/lmtt/m/n/8 ROS_ERROR("Failed to get a plan from potential when a legal potential was found. This should[] 
+ []
+
+[86] [87] [88] [89]
+Overfull \hbox (16.3933pt too wide) in paragraph at lines 3747--3747
+[]                    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 重 新 将 其 赋 值 为 \TU/lmtt/m/n/9 COST_NEUTRAL(50)+ \TU/FandolFang-Regular(0)/m/n/9 当 前 \TU/lmtt/m/n/9 cell \TU/FandolFang-Regular(0)/m/n/9 在 \TU/lmtt/m/n/9 costmap \TU/FandolFang-Regular(0)/m/n/9 上 的 值 \TU/lmtt/m/n/9 × \TU/FandolFang-Regular(0)/m/n/9 比 例 \TU/lmtt/m/n/9 0.8 \TU/FandolFang-Regular(0)/m/n/9 （ 最 高 \TU/lmtt/m/n/9 253 \TU/FandolFang-Regular(0)/m/n/9 ） [] 
+ []
+
+[90]
+Overfull \hbox (11.66835pt too wide) in paragraph at lines 3790--3790
+[]    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 设 置 \TU/lmtt/m/n/9 costarr \TU/FandolFang-Regular(0)/m/n/9 的 四 条 边 的 \TU/lmtt/m/n/9 cell \TU/FandolFang-Regular(0)/m/n/9 的 值 为 \TU/lmtt/m/n/9 COST_OBS( \TU/FandolFang-Regular(0)/m/n/9 致 命 层 \TU/lmtt/m/n/9 254) \TU/FandolFang-Regular(0)/m/n/9 ， 封 闭 地 图 四 周 ， 以 防 产 生 边 界 以 外 的 轨 迹 [] 
+ []
+
+[91] [92] [93] [94]
+File: image/pot_simple_equation.png Graphic file (type bmp)
+<image/pot_simple_equation.png>
+File: image/pot_hard_equation.png Graphic file (type bmp)
+<image/pot_hard_equation.png>
+ [95] [96]
+File: image/curT_off.png Graphic file (type bmp)
+<image/curT_off.png>
+File: image/curT_on.png Graphic file (type bmp)
+<image/curT_on.png>
+ [97] [98] [99]
+Overfull \hbox (17.806pt too wide) in paragraph at lines 4158--4158
+[]            \TU/lmtt/m/n/8 ROS_DEBUG("[Path] Pot: %0.1f  pos: %0.1f,%0.1f", potarr[stc], pathx[npath-1], pathy[npath-1]);[] 
+ []
+
+
+Overfull \hbox (13.55803pt too wide) in paragraph at lines 4158--4158
+[]            \TU/lmtt/m/n/8 ROS_DEBUG("[Path] %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f; final x=%.3f, y=%.3f\n"[] 
+ []
+
+[100]
+Overfull \hbox (13.55795pt too wide) in paragraph at lines 4158--4158
+[]        \TU/lmtt/m/n/8 , gradx[stc], grady[stc], gradx[stc+1], grady[stc+1], gradx[stcnx], grady[stcnx], gradx[stcnx+1],[] 
+ []
+
+File: image/example_costmap.png Graphic file (type bmp)
+<image/example_costmap.png>
+File: image/example_potarr.jpg Graphic file (type bmp)
+<image/example_potarr.jpg>
+[101]
+File: image/example_gradx.png Graphic file (type bmp)
+<image/example_gradx.png>
+File: image/example_grady.png Graphic file (type bmp)
+<image/example_grady.png>
+ [102] [103]
+Overfull \hbox (6.94336pt too wide) in paragraph at lines 4266--4266
+[]    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 对 翻 译 生 成 的 \TU/lmtt/m/n/9 costarr \TU/FandolFang-Regular(0)/m/n/9 数 组 进 行 了 边 际 设 置 等 处 理 ， 并 初 始 化 了 \TU/lmtt/m/n/9 potarr \TU/FandolFang-Regular(0)/m/n/9 数 组 和 梯 度 数 组 \TU/lmtt/m/n/9 gradx \TU/FandolFang-Regular(0)/m/n/9 、 \TU/lmtt/m/n/9 grady[] 
+ []
+
+
+Overfull \hbox (55.52682pt too wide) in paragraph at lines 4271--4272
+[]\TU/FandolSong-Regular(0)/m/n/10 全 局 路 径 规 划 $\OML/cmm/m/it/10 BaseGlobalPlanner$ \TU/FandolSong-Regular(0)/m/n/10 的 $\OML/cmm/m/it/10 plugin$ \TU/FandolSong-Regular(0)/m/n/10 有 三 种\TU/lmr/m/n/10 : $\OML/cmm/m/it/10 navfn\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 NavfnROS$\TU/FandolSong-Regular(0)/m/n/10 ，| $\OML/cmm/m/it/10 global[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 GlobalPlanner$\TU/lmr/m/n/10 ,
+ []
+
+
+Overfull \hbox (34.89886pt too wide) in paragraph at lines 4271--4272
+\OML/cmm/m/it/10 carrot[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 CarrotPlanner$\TU/lmr/m/n/10 . \TU/FandolSong-Regular(0)/m/n/10 其 中 常 用 的 为 $\OML/cmm/m/it/10 global[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 GlobalPlanner$\TU/FandolSong-Regular(0)/m/n/10 ，|  它 是 $\OML/cmm/m/it/10 navfn\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 NavfnROS$
+ []
+
+[104]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 4274.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `superscript' on input line 4274.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 4274.
+
+File: image/global_planner.png Graphic file (type bmp)
+<image/global_planner.png>
+[105] [106]
+Overfull \hbox (0.81396pt too wide) in paragraph at lines 4360--4360
+[]        \TU/lmtt/m/n/8 make_plan_service_ = private_nh.advertiseService("make_plan", &PlannerWithCostmap::makePlanSer[] 
+ []
+
+
+Overfull \hbox (5.06198pt too wide) in paragraph at lines 4360--4360
+[]        \TU/lmtt/m/n/8 pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal", 1, &PlannerWithCostmap::poseCallback,[] 
+ []
+
+[107] [108]
+Overfull \hbox (2.21838pt too wide) in paragraph at lines 4482--4482
+[]            \TU/lmtt/m/n/9 //pop_heap() \TU/FandolFang-Regular(0)/m/n/9 是 将 堆 顶 元 素 与 最 后 一 个 元 素 交 换 位 置 ， 之 后 用 \TU/lmtt/m/n/9 pop_back \TU/FandolFang-Regular(0)/m/n/9 将 最 后 一 个 元 素 删 除 [] 
+ []
+
+[109]
+Overfull \hbox (13.55798pt too wide) in paragraph at lines 4531--4531
+[]        \TU/lmtt/m/n/8 potential[next_i] = p_calc_->calculatePotential(potential, costs[next_i] + neutral_cost_, next_i,[] 
+ []
+
+[110]
+Overfull \hbox (17.80606pt too wide) in paragraph at lines 4531--4531
+[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 计 算 \TU/lmtt/m/n/8 distance \TU/FandolFang-Regular(0)/m/n/8 ： 从 节 点 \TU/lmtt/m/n/8 n \TU/FandolFang-Regular(0)/m/n/8 到 目 标 点 最 佳 路 径 的 估 计 代 价 ， 这 里 选 用 了 曼 哈 顿 距 离 （ 不 能 斜 着 走   且 无 视 障 碍 物 ） [] 
+ []
+
+
+Overfull \hbox (9.31003pt too wide) in paragraph at lines 4531--4531
+[]        \TU/lmtt/m/n/8 //distance \TU/FandolFang-Regular(0)/m/n/8 只 是 格 子 个 数 ， 还 有 乘 上 每 个 格 子 的 真 实 距 离 或 是 分 辨 率 ， 所 以 最 后 \TU/lmtt/m/n/8 h = distance*neutral_cost_[] 
+ []
+
+[111] [112]
+Overfull \hbox (16.39305pt too wide) in paragraph at lines 4633--4633
+[]    \TU/lmtt/m/n/9 virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_po[] 
+ []
+
+[113]
+Overfull \hbox (14.54349pt too wide) in paragraph at lines 4666--4668
+[][]$[][][][][] [] [] [] [][][][][][] [] [][][] [] [][][][][] [] [][][] [] [][][][][] [] [][][][] [] [][][][][][] [] [][][][][][][][][][][][][][][][][][][][][][][][][][] [] [][][][] [] [][][][][] [] [][][][][][][]$[] 
+ []
+
+File: image/trajectory_planner.png Graphic file (type bmp)
+<image/trajectory_planner.png>
+[114] [115]
+Missing character: There is no ： (U+FF1A) in font [lmroman10-regular]:mapping=tex-text;!
+ [116]
+Overfull \hbox (9.30995pt too wide) in paragraph at lines 4760--4760
+[]    \TU/lmtt/m/n/8 bool TrajectoryPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan){[] 
+ []
+
+
+Overfull \hbox (2.21805pt too wide) in paragraph at lines 4786--4786
+[]    \TU/lmtt/m/n/9 if (!transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, tran[] 
+ []
+
+[117]
+Overfull \hbox (0.81398pt too wide) in paragraph at lines 4888--4888
+[]    \TU/lmtt/m/n/8 if (xy_tolerance_latch_ || (getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolera[] 
+ []
+
+[118]
+Overfull \hbox (0.81398pt too wide) in paragraph at lines 4888--4888
+[]            \TU/lmtt/m/n/8 if (!rotating_to_goal_ && !base_local_planner::stopped(base_odom, rot_stopped_velocity_, t[] 
+ []
+
+[119]
+Overfull \hbox (0.81401pt too wide) in paragraph at lines 4950--4950
+[]    \TU/lmtt/m/n/8 ROS_DEBUG_NAMED("trajectory_planner_ros", "A valid velocity command of (%.2f, %.2f, %.2f) was foun[] 
+ []
+
+[120]
+Overfull \hbox (0.81398pt too wide) in paragraph at lines 4991--4991
+[]        \TU/lmtt/m/n/8 double vx = sign(robot_vel.pose.position.x) * std::max(0.0, (fabs(robot_vel.pose.position.x) -[] 
+ []
+
+
+Overfull \hbox (0.81398pt too wide) in paragraph at lines 4991--4991
+[]        \TU/lmtt/m/n/8 double vy = sign(robot_vel.pose.position.y) * std::max(0.0, (fabs(robot_vel.pose.position.y) -[] 
+ []
+
+
+Overfull \hbox (5.06197pt too wide) in paragraph at lines 4991--4991
+[]        \TU/lmtt/m/n/8 bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y,[] 
+ []
+
+[121] [122]
+Overfull \hbox (0.81396pt too wide) in paragraph at lines 5066--5066
+[]        \TU/lmtt/m/n/8 v_theta_samp = sign(v_theta_samp) * std::min(std::max(fabs(v_theta_samp), min_acc_vel), max_ac[] 
+ []
+
+
+Overfull \hbox (17.806pt too wide) in paragraph at lines 5066--5066
+[]                             \TU/lmtt/m/n/8 : std::max(min_vel_th_, std::min(-1.0 * min_in_place_vel_th_, v_theta_samp));[] 
+ []
+
+
+Overfull \hbox (5.06197pt too wide) in paragraph at lines 5066--5066
+[]        \TU/lmtt/m/n/8 bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y,[] 
+ []
+
+
+Overfull \hbox (5.062pt too wide) in paragraph at lines 5066--5066
+[]        \TU/lmtt/m/n/8 ROS_DEBUG("Moving to desired goal orientation, th cmd: %.2f, valid_cmd: %d", v_theta_samp, vali[] 
+ []
+
+[123] [124]
+Overfull \hbox (9.30995pt too wide) in paragraph at lines 5147--5147
+[]    \TU/lmtt/m/n/8 std::vector<base_local_planner::Position2DInt> footprint_list = footprint_helper_.getFootprintCells([] 
+ []
+
+[125]
+Overfull \hbox (17.80606pt too wide) in paragraph at lines 5229--5229
+[]    \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 根 据 预 设 的 线 速 度 与 角 速 度 的 采 样 数 ， 和 上 面 计 算 得 到 的 范 围 ， 分 别 计 算 出 速 度 的 采 样 间 隔 \TU/lmtt/m/n/8 ( \TU/FandolFang-Regular(0)/m/n/8 也 就 是 速 度 的 分 辨 率 \TU/lmtt/m/n/8 )[] 
+ []
+
+[126] [127] [128]
+Overfull \hbox (0.81406pt too wide) in paragraph at lines 5353--5353
+[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 注 意 如 果 能 找 到 合 法 的 原 地 旋 转 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 相 比 之 下 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 我 们 就 不 希 望 选 择 以 \TU/lmtt/m/n/8 y \TU/FandolFang-Regular(0)/m/n/8 向 速 度 进 行 移 动 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 而 是 选 择 进 行 原 地 旋 转 [] 
+ []
+
+
+Overfull \hbox (0.814pt too wide) in paragraph at lines 5353--5353
+[]            \TU/lmtt/m/n/8 && (comp_traj->cost_ <= best_traj->cost_ || best_traj->cost_ < 0 || best_traj->yv_ != 0.0)[] 
+ []
+
+
+Overfull \hbox (15.32936pt too wide) in paragraph at lines 5358--5359
+[]\TU/FandolSong-Regular(0)/m/n/10 这 个 计 算 得 到 的 相 当 于 机 器 人 原 地 旋 转 后  |“面 向”|  的 $\OML/cmm/m/it/10 cell$\TU/FandolSong-Regular(0)/m/n/10 ，|  它 和 机 器 人 的 距 离 是 $\OML/cmm/m/it/10 headin[]lookahead[]$\TU/FandolSong-Regular(0)/m/n/10 ，|
+ []
+
+[129] [130]
+Overfull \hbox (0.81406pt too wide) in paragraph at lines 5479--5479
+[]    \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 也 就 是 不 需 要 判 断 后 退 时 的 轨 迹 是 否 是 \TU/lmtt/m/n/8 best, \TU/FandolFang-Regular(0)/m/n/8 只 要 给 了 向 后 的 速 度 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 那 么 默 认 就 是 \TU/lmtt/m/n/8 best( \TU/FandolFang-Regular(0)/m/n/8 因 为 都 是 不 得 已 才 给 的 \TU/lmtt/m/n/8 )[] 
+ []
+
+[131] [132]
+Overfull \hbox (17.80597pt too wide) in paragraph at lines 5610--5610
+[]        \TU/lmtt/m/n/8 occ_cost = std::max(std::max(occ_cost, footprint_cost), double(costmap_.getCost(cell_x, cell_y)));[] 
+ []
+
+
+Overfull \hbox (9.30998pt too wide) in paragraph at lines 5610--5610
+[]        \TU/lmtt/m/n/8 if (simple_attractor_) {goal_dist = (x_i - global_plan_[global_plan_.size() -1].pose.position.x)[] 
+ []
+
+
+Overfull \hbox (9.31001pt too wide) in paragraph at lines 5610--5610
+[]                                          \TU/lmtt/m/n/8 * (x_i - global_plan_[global_plan_.size() -1].pose.position.x)[] 
+ []
+
+
+Overfull \hbox (9.31001pt too wide) in paragraph at lines 5610--5610
+[]                                          \TU/lmtt/m/n/8 + (y_i - global_plan_[global_plan_.size() -1].pose.position.y)[] 
+ []
+
+
+Overfull \hbox (13.55801pt too wide) in paragraph at lines 5610--5610
+[]                                          \TU/lmtt/m/n/8 * (y_i - global_plan_[global_plan_.size() -1].pose.position.y);[] 
+ []
+
+[133]
+Missing character: There is no ≥ (U+2265) in font [lmmono8-regular]:!
+ [134] [135]
+Overfull \hbox (0.814pt too wide) in paragraph at lines 5740--5740
+[]            \TU/lmtt/m/n/8 ROS_DEBUG("Adjusted global plan resolution, added %zu points", adjusted_global_plan.size()[] 
+ []
+
+[136]
+Overfull \hbox (9.31006pt too wide) in paragraph at lines 5740--5740
+[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 如 果 成 功 把 一 个 全 局 规 划 上 的 点 的 坐 标 转 换 到 地 图 坐 标 \TU/lmtt/m/n/8 (map_x,map_y) \TU/FandolFang-Regular(0)/m/n/8 上 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 且 在 代 价 地 图 上 这 一 点 不 是 未 知 的 [] 
+ []
+
+
+Overfull \hbox (9.31001pt too wide) in paragraph at lines 5740--5740
+[]        \TU/lmtt/m/n/8 if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N[] 
+ []
+
+
+Overfull \hbox (9.31004pt too wide) in paragraph at lines 5740--5740
+[]            \TU/lmtt/m/n/8 ROS_ERROR("None of the %d first of %zu (%zu) points of the global plan were in the local cos[] 
+ []
+
+[137]
+Overfull \hbox (9.31001pt too wide) in paragraph at lines 5803--5803
+[]        \TU/lmtt/m/n/8 if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N[] 
+ []
+
+
+Overfull \hbox (9.31004pt too wide) in paragraph at lines 5803--5803
+[]            \TU/lmtt/m/n/8 ROS_ERROR("None of the points of the global plan were in the local costmap, global plan poin[] 
+ []
+
+[138] [139] [140] [141] [142] [143] (./ROS_Notes.aux)
+Package rerunfilecheck Info: File `ROS_Notes.out' has not changed.
+(rerunfilecheck)             Checksum: A1E17D57EB94ABF6F2099EF6CA1F1FA8;18733.
+ ) 
+Here is how much of TeX's memory you used:
+ 14409 strings out of 476919
+ 310374 string characters out of 5821839
+ 672597 words of memory out of 5000000
+ 34099 multiletter control sequences out of 15000+600000
+ 419624 words of font info for 131 fonts, out of 8000000 for 9000
+ 1348 hyphenation exceptions out of 8191
+ 82i,16n,88p,466b,896s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+Output written on ROS_Notes.pdf (150 pages).

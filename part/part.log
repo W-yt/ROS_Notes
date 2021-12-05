@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.13)  5 DEC 2021 20:55
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.13)  5 DEC 2021 21:09
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -628,174 +628,22 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 (fontspec)             <->"[FandolFang-Regular.otf]/OT:language=dflt;"
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
-
-Overfull \hbox (14.54349pt too wide) in paragraph at lines 91--93
-[][]$[][][][][] [] [] [] [][][][][][] [] [][][] [] [][][][][] [] [][][] [] [][][][][] [] [][][][] [] [][][][][][] [] [][][][][][][][][][][][][][][][][][][][][][][][][][] [] [][][][] [] [][][][][] [] [][][][][][][]$[] 
- []
-
 [1
 
 ]
-Missing character: There is no ： (U+FF1A) in font [lmroman10-regular]:mapping=tex-text;!
 LaTeX Font Info:    Font shape `TU/FandolSong-Regular(0)/m/sl' in size <10> not available
-(Font)              Font shape `TU/FandolSong-Regular(0)/m/it' tried instead on input line 161.
- [2]
-Overfull \hbox (9.30995pt too wide) in paragraph at lines 185--185
-[]    \TU/lmtt/m/n/8 bool TrajectoryPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan){[] 
- []
-
-[3]
-Overfull \hbox (2.21805pt too wide) in paragraph at lines 211--211
-[]    \TU/lmtt/m/n/9 if (!transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, tran[] 
- []
-
-
-Overfull \hbox (0.81398pt too wide) in paragraph at lines 313--313
-[]    \TU/lmtt/m/n/8 if (xy_tolerance_latch_ || (getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolera[] 
- []
-
-[4]
-Overfull \hbox (0.81398pt too wide) in paragraph at lines 313--313
-[]            \TU/lmtt/m/n/8 if (!rotating_to_goal_ && !base_local_planner::stopped(base_odom, rot_stopped_velocity_, t[] 
- []
-
-[5]
-Overfull \hbox (0.81401pt too wide) in paragraph at lines 375--375
-[]    \TU/lmtt/m/n/8 ROS_DEBUG_NAMED("trajectory_planner_ros", "A valid velocity command of (%.2f, %.2f, %.2f) was foun[] 
- []
-
-[6]
-Overfull \hbox (0.81398pt too wide) in paragraph at lines 416--416
-[]        \TU/lmtt/m/n/8 double vx = sign(robot_vel.pose.position.x) * std::max(0.0, (fabs(robot_vel.pose.position.x) -[] 
- []
-
-
-Overfull \hbox (0.81398pt too wide) in paragraph at lines 416--416
-[]        \TU/lmtt/m/n/8 double vy = sign(robot_vel.pose.position.y) * std::max(0.0, (fabs(robot_vel.pose.position.y) -[] 
- []
-
-
-Overfull \hbox (5.06197pt too wide) in paragraph at lines 416--416
-[]        \TU/lmtt/m/n/8 bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y,[] 
- []
-
-[7] [8]
-Overfull \hbox (0.81396pt too wide) in paragraph at lines 491--491
-[]        \TU/lmtt/m/n/8 v_theta_samp = sign(v_theta_samp) * std::min(std::max(fabs(v_theta_samp), min_acc_vel), max_ac[] 
- []
-
-
-Overfull \hbox (17.806pt too wide) in paragraph at lines 491--491
-[]                             \TU/lmtt/m/n/8 : std::max(min_vel_th_, std::min(-1.0 * min_in_place_vel_th_, v_theta_samp));[] 
- []
-
-
-Overfull \hbox (5.06197pt too wide) in paragraph at lines 491--491
-[]        \TU/lmtt/m/n/8 bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y,[] 
- []
-
-
-Overfull \hbox (5.062pt too wide) in paragraph at lines 491--491
-[]        \TU/lmtt/m/n/8 ROS_DEBUG("Moving to desired goal orientation, th cmd: %.2f, valid_cmd: %d", v_theta_samp, vali[] 
- []
-
-[9] [10]
-Overfull \hbox (9.30995pt too wide) in paragraph at lines 572--572
-[]    \TU/lmtt/m/n/8 std::vector<base_local_planner::Position2DInt> footprint_list = footprint_helper_.getFootprintCells([] 
- []
-
-[11] [12]
-Overfull \hbox (17.80606pt too wide) in paragraph at lines 654--654
-[]    \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 根 据 预 设 的 线 速 度 与 角 速 度 的 采 样 数 ， 和 上 面 计 算 得 到 的 范 围 ， 分 别 计 算 出 速 度 的 采 样 间 隔 \TU/lmtt/m/n/8 ( \TU/FandolFang-Regular(0)/m/n/8 也 就 是 速 度 的 分 辨 率 \TU/lmtt/m/n/8 )[] 
- []
-
-[13] [14]
-Overfull \hbox (0.81406pt too wide) in paragraph at lines 778--778
-[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 注 意 如 果 能 找 到 合 法 的 原 地 旋 转 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 相 比 之 下 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 我 们 就 不 希 望 选 择 以 \TU/lmtt/m/n/8 y \TU/FandolFang-Regular(0)/m/n/8 向 速 度 进 行 移 动 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 而 是 选 择 进 行 原 地 旋 转 [] 
- []
-
-
-Overfull \hbox (0.814pt too wide) in paragraph at lines 778--778
-[]            \TU/lmtt/m/n/8 && (comp_traj->cost_ <= best_traj->cost_ || best_traj->cost_ < 0 || best_traj->yv_ != 0.0)[] 
- []
-
-[15]
-Overfull \hbox (15.32936pt too wide) in paragraph at lines 783--784
-[]\TU/FandolSong-Regular(0)/m/n/10 这 个 计 算 得 到 的 相 当 于 机 器 人 原 地 旋 转 后  |“面 向”|  的 $\OML/cmm/m/it/10 cell$\TU/FandolSong-Regular(0)/m/n/10 ，|  它 和 机 器 人 的 距 离 是 $\OML/cmm/m/it/10 headin[]lookahead[]$\TU/FandolSong-Regular(0)/m/n/10 ，|
- []
-
-[16]
-Overfull \hbox (0.81406pt too wide) in paragraph at lines 904--904
-[]    \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 也 就 是 不 需 要 判 断 后 退 时 的 轨 迹 是 否 是 \TU/lmtt/m/n/8 best, \TU/FandolFang-Regular(0)/m/n/8 只 要 给 了 向 后 的 速 度 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 那 么 默 认 就 是 \TU/lmtt/m/n/8 best( \TU/FandolFang-Regular(0)/m/n/8 因 为 都 是 不 得 已 才 给 的 \TU/lmtt/m/n/8 )[] 
- []
-
-[17] [18] [19]
-Overfull \hbox (17.80597pt too wide) in paragraph at lines 1035--1035
-[]        \TU/lmtt/m/n/8 occ_cost = std::max(std::max(occ_cost, footprint_cost), double(costmap_.getCost(cell_x, cell_y)));[] 
- []
-
-
-Overfull \hbox (9.30998pt too wide) in paragraph at lines 1035--1035
-[]        \TU/lmtt/m/n/8 if (simple_attractor_) {goal_dist = (x_i - global_plan_[global_plan_.size() -1].pose.position.x)[] 
- []
-
-
-Overfull \hbox (9.31001pt too wide) in paragraph at lines 1035--1035
-[]                                          \TU/lmtt/m/n/8 * (x_i - global_plan_[global_plan_.size() -1].pose.position.x)[] 
- []
-
-
-Overfull \hbox (9.31001pt too wide) in paragraph at lines 1035--1035
-[]                                          \TU/lmtt/m/n/8 + (y_i - global_plan_[global_plan_.size() -1].pose.position.y)[] 
- []
-
-
-Overfull \hbox (13.55801pt too wide) in paragraph at lines 1035--1035
-[]                                          \TU/lmtt/m/n/8 * (y_i - global_plan_[global_plan_.size() -1].pose.position.y);[] 
- []
-
-Missing character: There is no ≥ (U+2265) in font [lmmono8-regular]:!
-[20] [21] [22]
-Overfull \hbox (0.814pt too wide) in paragraph at lines 1165--1165
-[]            \TU/lmtt/m/n/8 ROS_DEBUG("Adjusted global plan resolution, added %zu points", adjusted_global_plan.size()[] 
- []
-
-
-Overfull \hbox (9.31006pt too wide) in paragraph at lines 1165--1165
-[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 如 果 成 功 把 一 个 全 局 规 划 上 的 点 的 坐 标 转 换 到 地 图 坐 标 \TU/lmtt/m/n/8 (map_x,map_y) \TU/FandolFang-Regular(0)/m/n/8 上 \TU/lmtt/m/n/8 , \TU/FandolFang-Regular(0)/m/n/8 且 在 代 价 地 图 上 这 一 点 不 是 未 知 的 [] 
- []
-
-
-Overfull \hbox (9.31001pt too wide) in paragraph at lines 1165--1165
-[]        \TU/lmtt/m/n/8 if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N[] 
- []
-
-
-Overfull \hbox (9.31004pt too wide) in paragraph at lines 1165--1165
-[]            \TU/lmtt/m/n/8 ROS_ERROR("None of the %d first of %zu (%zu) points of the global plan were in the local cos[] 
- []
-
-[23]
-Overfull \hbox (9.31001pt too wide) in paragraph at lines 1228--1228
-[]        \TU/lmtt/m/n/8 if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N[] 
- []
-
-
-Overfull \hbox (9.31004pt too wide) in paragraph at lines 1228--1228
-[]            \TU/lmtt/m/n/8 ROS_ERROR("None of the points of the global plan were in the local costmap, global plan poin[] 
- []
-
-[24] [25] [26] [27] [28] [29] (./part.aux)
+(Font)              Font shape `TU/FandolSong-Regular(0)/m/it' tried instead on input line 215.
+ [2] (./part.aux)
 Package rerunfilecheck Info: File `part.out' has not changed.
-(rerunfilecheck)             Checksum: 0E844273E22B1B8AD98251A0642AFB5C;1265.
+(rerunfilecheck)             Checksum: DF1B99C9A1D9BB209D610CC59FB4A380;567.
  ) 
 Here is how much of TeX's memory you used:
- 14067 strings out of 476919
- 296316 string characters out of 5821839
- 651592 words of memory out of 5000000
- 33794 multiletter control sequences out of 15000+600000
- 419584 words of font info for 126 fonts, out of 8000000 for 9000
+ 13771 strings out of 476919
+ 275356 string characters out of 5821839
+ 631851 words of memory out of 5000000
+ 33503 multiletter control sequences out of 15000+600000
+ 419552 words of font info for 122 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 82i,6n,88p,377b,896s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 82i,6n,88p,377b,399s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on part.pdf (32 pages).
+Output written on part.pdf (5 pages).
