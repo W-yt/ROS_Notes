@@ -55,11 +55,11 @@ namespace base_local_planner {
   double CostmapModel::footprintCost(const geometry_msgs::Point& position, 
                                      const std::vector<geometry_msgs::Point>& footprint,
                                      double inscribed_radius, double circumscribed_radius){
-    // returns:
-    //  -1 if footprint covers at least a lethal obstacle cell, or
-    //  -2 if footprint covers at least a no-information cell, or
-    //  -3 if footprint is [partially] outside of the map, or
-    //  a positive value for traversable space
+    //四种返回值：
+    //    -1.0 ：覆盖至少一个障碍cell
+    //    -2.0 ：覆盖至少一个未知cell
+    //    -3.0 ：不在地图上
+    //    其他正cost
 
     unsigned int cell_x, cell_y;
 
@@ -81,7 +81,7 @@ namespace base_local_planner {
       return cost;
     }
 
-    //如果脚印点数小于三，需要考虑机器人的形状，把足迹视为多边形
+    //如果脚印点数大于三，需要考虑机器人的形状，把足迹视为多边形
     unsigned int x0, x1, y0, y1;
     double line_cost = 0.0;
     double footprint_cost = 0.0;

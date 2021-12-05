@@ -230,7 +230,8 @@ namespace base_local_planner{
     computeTargetDistance(path_dist_queue, costmap);
   }
 
-  //mark the point of the costmap as local goal where global_plan first leaves the area (or its last point)
+  //通过迭代找到全局路径的终点，即目标点
+  //但如果迭代过程当中到达了局部规划costmap的边际或经过障碍物，立即退出迭代，将上一个有效点作为终点
   void MapGrid::setLocalGoal(const costmap_2d::Costmap2D& costmap,
                              const std::vector<geometry_msgs::PoseStamped>& global_plan) {
     //检查地图尺寸和索引

@@ -1093,26 +1093,328 @@ MapCell类数据成员:
 
 \subsubsection{MapGrid::setTargetCells}
 
-该函数处理路径地图，计算整个地图上的所有cell的路径距离(path_dist)。
+该函数处理路径地图，计算整个地图上的所有$cell$的路径距离($path\_dist$)。
 
-首先检查路径地图的尺寸以及索引是否正确，调整全局路径的分辨率使其能够达到cost_map的分辨率。
+首先检查路径地图的尺寸以及索引是否正确，调整全局路径的分辨率使其能够达到$cost\_map$的分辨率。
 
-接下来将全局路径的点转换到路径地图上，并且在路径地图上将同时也位于全局路径上的点的target_dist(路径距离)设置为0,即表示该点在全局路径上。
+接下来将全局路径的点转换到路径地图上，并且在路径地图上将同时也位于全局路径上的点的$target\_dist$(路径距离)设置为0,即表示该点在全局路径上。
 
-接下来调用MapGrid::computeTargetDistance函数，让路径地图从target_dist=0的cell队列开始向四周开始传播，直至路径地图上所有的cell都计算得到target_dist。
+接下来调用$MapGrid::computeTargetDistance$函数，让路径地图从$target\_dist=0$的$cell$队列开始向四周开始传播，直至路径地图上所有的$cell$都计算得到$target\_dist$。
+
+该函数的代码如下：
+
+\footnotesize
+\begin{verbatim}
+    void MapGrid::setTargetCells(const costmap_2d::Costmap2D& costmap,
+                                const std::vector<geometry_msgs::PoseStamped>& global_plan) {
+        //检查路径地图尺寸以及索引是否正确
+        sizeCheck(costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
+
+        bool started_path = false;
+
+        //用于储存全局路径上的MapCell
+        queue<MapCell*> path_dist_queue;
+
+        std::vector<geometry_msgs::PoseStamped> adjusted_global_plan;
+        //传入的全局规划是global系下的
+        //调用adjustPlanResolution函数对其分辨率进行调整，使其达到costmap的分辨率
+        adjustPlanResolution(global_plan, adjusted_global_plan, costmap.getResolution());
+        if (adjusted_global_plan.size() != global_plan.size()) {
+            ROS_DEBUG("Adjusted global plan resolution, added %zu points", adjusted_global_plan.size() 
+        - global_plan.size());
+        }
+
+        unsigned int i;
+        //将全局路径的点转换到路径地图上
+        for (i = 0; i < adjusted_global_plan.size(); ++i) {
+        double g_x = adjusted_global_plan[i].pose.position.x;
+        double g_y = adjusted_global_plan[i].pose.position.y;
+        unsigned int map_x, map_y;
+        //如果成功把一个全局规划上的点的坐标转换到地图坐标(map_x,map_y)上,且在代价地图上这一点不是未知的
+        if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N
+    O_INFORMATION) {
+            MapCell& current = getCell(map_x, map_y);
+            //将这个点的target_dist(到path的距离)设置为0,即在全局路径上
+            //setTargetCells和setLocalGoal这两个函数:(此函数是setTargetCells)
+            //    前者在“路径地图”上将全局路径点target_dist标记为0
+            //    后者在“目标地图”上将目标点target_dist标记为0
+            current.target_dist = 0.0;
+            //标记已经计算了距离
+            current.target_mark = true;
+            //把该点放进path_dist_queue队列中
+            path_dist_queue.push(&current);
+            //标记已经开始把点转换到地图坐标
+            started_path = true;
+        }
+        //当代价地图上这一点的代价不存在了(规划路径已经到达了代价地图的边界) 
+        //并且标记了已经开始转换，退出循环
+        //(这个else if写的有一点迷惑性,注意首先需要不满足if条件,才会判断elseif的条件)
+        else if (started_path) {
+            break;
+        }
+        }
+        //如果循环结束后,开始转换标志(started_path)还没有置位 则报错
+        if (!started_path) {
+            ROS_ERROR("None of the %d first of %zu (%zu) points of the global plan were in the local cos
+        tmap and free", i, adjusted_global_plan.size(), global_plan.size());
+            return;
+        }
+        //计算路径地图上的每一个cell与规划路径之间的距离
+        computeTargetDistance(path_dist_queue, costmap);
+    }
+\end{verbatim}
+\normalsize
 
 \subsubsection{MapGrid::setLocalGoal}
 
+该函数处理目标地图，计算整个地图上的所有$cell$的目标距离($goal\_dist$)。
 
+通过迭代找到全局路径的终点，即目标点，但如果迭代过程当中到达了局部规划$costmap$的边际或经过障碍物，立即退出迭代，将上一个有效点作为终点。该函数的逻辑与$MapGrid::setTargetCells$基本相同，不再赘述，代码如下：
 
+\footnotesize
+\begin{verbatim}
+    void MapGrid::setLocalGoal(const costmap_2d::Costmap2D& costmap,
+                               const std::vector<geometry_msgs::PoseStamped>& global_plan) {
+        //检查地图尺寸和索引
+        sizeCheck(costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
 
+        int local_goal_x = -1;
+        int local_goal_y = -1;
+        bool started_path = false;
 
+        std::vector<geometry_msgs::PoseStamped> adjusted_global_plan;
+        //调整分辨率
+        adjustPlanResolution(global_plan, adjusted_global_plan, costmap.getResolution());
 
+        //逐个跳过全局路径中的点,一直到碰到了局部规划costmap的边界
+        //则立即退出迭代，将上一个有效点作为终点
+        //否则一直迭代到全局路径的终点(目标点)
+        for (unsigned int i = 0; i < adjusted_global_plan.size(); ++i) {
+        double g_x = adjusted_global_plan[i].pose.position.x;
+        double g_y = adjusted_global_plan[i].pose.position.y;
+        unsigned int map_x, map_y;
+        if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::N
+    O_INFORMATION) {
+            local_goal_x = map_x;
+            local_goal_y = map_y;
+            started_path = true;
+        } else {
+            if (started_path) {
+            break;
+            }// else we might have a non pruned path, so we just continue
+        }
+        }
+        if (!started_path) {
+            ROS_ERROR("None of the points of the global plan were in the local costmap, global plan poin
+        ts too far from robot");
+            return;
+        }
 
+        queue<MapCell*> path_dist_queue;
+        if (local_goal_x >= 0 && local_goal_y >= 0) {
+        MapCell& current = getCell(local_goal_x, local_goal_y);
+        costmap.mapToWorld(local_goal_x, local_goal_y, goal_x_, goal_y_);
+        //将迭代得到的目标点对应在“目标地图”上的cell的target_dist标记为0
+        //setTargetCells和setLocalGoal这两个函数:(此函数是setLocalGoal)
+        //    前者在“路径地图”上将全局路径点target_dist标记为0
+        //    后者在“目标地图”上将目标点target_dist标记为0
+        current.target_dist = 0.0;
+        current.target_mark = true;
+        path_dist_queue.push(&current);
+        }
+        //计算目标地图上的每一个cell与规划路径之间的距离
+        computeTargetDistance(path_dist_queue, costmap);
+    }
+\end{verbatim}
+\normalsize
 
+\subsubsection{MapGrid::computeTargetDistance}
 
+该函数在$MapGrid::setTargetCells$以及$MapGrid::setLocalGoal$中被调用，用来根据传入的$target\_dist=0$的$cell$队列，向四周传播，直到获得整个地图(路径地图/目标地图)的$target\_dist$值。
 
+函数中首先从传入的$target\_dist=0$的$cell$队列开始，循环每一个$cell$作为“父$cell$”，访问它四周的$cell$，依据“父$cell$”的$target\_dist$值更新“子$cell$”的$target\_dist$值，然后将“父$cell$”踢出队列，“子$cell$”加入队列，如此直至所有$cell$的$target\_dist$被更新完成。
 
+该函数的代码如下：
+
+\footnotesize
+\begin{verbatim}
+    void MapGrid::computeTargetDistance(queue<MapCell*>& dist_queue,
+                                        const costmap_2d::Costmap2D& costmap){
+        MapCell* current_cell;
+        MapCell* check_cell;
+        unsigned int last_col = size_x_ - 1;
+        unsigned int last_row = size_y_ - 1;
+    
+        //依次将队列中的cell作为"父cell",检查"父cell"四周的cell
+        //对其调用updatePathCell函数，得到该cell的值
+        //如果该cell的值有效，则加入循环队列里，弹出“父cell”，四周的cell成为新的“父cell”
+    
+        //C++中的queue(FIFO): 
+        //  只能访问queue<T>容器适配器的第一个和最后一个元素,只能在末尾添加新元素,只能从头部移除元素
+    
+        while(!dist_queue.empty()){
+            current_cell = dist_queue.front();
+            //将current_cell弹出
+            dist_queue.pop();
+        
+            if(current_cell->cx > 0){
+                check_cell = current_cell - 1;
+                if(!check_cell->target_mark){
+                    //标记该cell被访问过了
+                    check_cell->target_mark = true;
+                    if(updatePathCell(current_cell, check_cell, costmap)) {
+                        dist_queue.push(check_cell);
+                    }
+                }
+            }
+            if(current_cell->cx < last_col){
+                check_cell = current_cell + 1;
+                if(!check_cell->target_mark){
+                    check_cell->target_mark = true;
+                    if(updatePathCell(current_cell, check_cell, costmap)) {
+                        dist_queue.push(check_cell);
+                    }
+                }
+            }
+            if(current_cell->cy > 0){
+                check_cell = current_cell - size_x_;
+                if(!check_cell->target_mark){
+                    check_cell->target_mark = true;
+                    if(updatePathCell(current_cell, check_cell, costmap)) {
+                        dist_queue.push(check_cell);
+                    }
+                }
+            }
+            if(current_cell->cy < last_row){
+                check_cell = current_cell + size_x_;
+                if(!check_cell->target_mark){
+                    check_cell->target_mark = true;
+                    if(updatePathCell(current_cell, check_cell, costmap)) {
+                        dist_queue.push(check_cell);
+                    }
+                }
+            }
+            //直到地图上所有cell的dist值都被计算出来
+        }
+    }
+\end{verbatim}
+\normalsize
+
+\subsection{CostmapModel类}
+
+CostmapModel类派生自WorldModel类，在TrajectoryPlanner中被使用，承担局部规划器与局部规划Costmap之间的桥梁工作。
+
+这个类帮助局部规划器在Costmap上进行计算，footprintCost、lineCost、pointCost三个类方法分别能通过Costmap计算出机器人足迹范围、两个cell连线、单个cell的代价，并将值返回给局部规划器。
+
+\subsubsection{CostmapModel::lineCost}
+
+该函数计算两点连线的代价，两点连线的代价就是线上点的最大代价，注意函数中使用LineIterator迭代器对线上的每一点进行迭代。代码如下：
+
+\footnotesize
+\begin{verbatim}
+    double CostmapModel::lineCost(int x0, int x1, int y0, int y1) const {
+        double line_cost = 0.0;
+        double point_cost = -1.0;
+    
+        for(LineIterator line( x0, y0, x1, y1 ); line.isValid(); line.advance()){
+            //LineIterator类的advance函数就是取线上的下一个点,然后getX和getY函数获取点的坐标
+            point_cost = pointCost(line.getX(), line.getY());
+        
+            if(point_cost < 0)
+                return point_cost;
+        
+            //两点连线的代价就是线上点的最大代价?
+            if(line_cost < point_cost)
+                line_cost = point_cost;
+        }
+        return line_cost;
+      }
+\end{verbatim}
+\normalsize
+
+\subsubsection{CostmapModel::footprintCost}
+
+该函数计算机器人足迹的代价（考虑机器人的外围形状）。该函数根据机器人的足迹包含的cell个数，分为两种情况：
+
+\begin{itemize}
+    \item [-] 如果脚印点数小于三，默认机器人形状为圆形，不考虑脚印，只考虑中心，返回中心cell的代价;
+    \item [-] 如果脚印点数大于三，需要考虑机器人的形状，把足迹视为多边形，循环调用lineCost计算多边形各边的cell，注意首尾闭合，最后返回代价。
+\end{itemize}
+
+该函数的返回值有四种情况：
+
+\begin{itemize}
+    \item -1.0 ：覆盖至少一个障碍cell
+    \item -2.0 ：覆盖至少一个未知cell
+    \item -3.0 ：不在地图上
+    \item 其他正cost
+\end{itemize}
+
+该函数的代码如下：
+
+\footnotesize
+\begin{verbatim}
+    double CostmapModel::footprintCost(const geometry_msgs::Point& position, 
+                                       const std::vector<geometry_msgs::Point>& footprint,
+                                       double inscribed_radius, double circumscribed_radius){
+        unsigned int cell_x, cell_y;
+
+        //获取机器人中心点的cell坐标，存放在cell_x cell_y中
+        //如果得不到坐标，说明不在地图上，直接返回-3
+        if(!costmap_.worldToMap(position.x, position.y, cell_x, cell_y))
+            return -3.0;
+
+        //如果脚印点数小于三，默认机器人形状为圆形，不考虑脚印，只考虑中心
+        if(footprint.size() < 3){
+            unsigned char cost = costmap_.getCost(cell_x, cell_y);
+            //如果中心位于未知代价的cell上，返回-2
+            if(cost == NO_INFORMATION)
+                return -2.0;
+            //如果中心位于致命障碍cell上，返回-1 (这几个宏是在costvalue中定义的，是灰度值)
+            if(cost == LETHAL_OBSTACLE || cost == INSCRIBED_INFLATED_OBSTACLE)
+                return -1.0;
+            //如果机器人位置既不是未知也不是致命，返回它的代价
+            return cost;
+        }
+
+        //如果脚印点数大于三，需要考虑机器人的形状，把足迹视为多边形
+        unsigned int x0, x1, y0, y1;
+        double line_cost = 0.0;
+        double footprint_cost = 0.0;
+
+        //we need to rasterize each line in the footprint
+        for(unsigned int i = 0; i < footprint.size() - 1; ++i){
+            //获取第一个点的cell坐标
+            if(!costmap_.worldToMap(footprint[i].x, footprint[i].y, x0, y0))
+                return -3.0;
+            //获取第二个点的cell坐标
+            if(!costmap_.worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1))
+                return -3.0;
+
+            //得到两点连线的代价
+            line_cost = lineCost(x0, x1, y0, y1);
+            footprint_cost = std::max(line_cost, footprint_cost);
+
+            //如果某条边缘线段代价<0(碰到了障碍)，直接停止生成代价，返回这个负代价
+            if(line_cost < 0)
+                return line_cost;
+        }
+
+        //再把footprint的最后一个点和第一个点连起来，形成封闭图形
+        if(!costmap_.worldToMap(footprint.back().x, footprint.back().y, x0, y0))
+            return -3.0;
+        if(!costmap_.worldToMap(footprint.front().x, footprint.front().y, x1, y1))
+            return -3.0;
+        line_cost = lineCost(x0, x1, y0, y1);
+        footprint_cost = std::max(line_cost, footprint_cost);
+        if(line_cost < 0)
+            return line_cost;
+
+        //如果所有边缘线的代价都是合法的，那么返回足迹的代价
+        return footprint_cost;
+    }
+\end{verbatim}
+\normalsize
 
 
 

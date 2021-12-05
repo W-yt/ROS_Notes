@@ -17,3 +17,9 @@
 \contentsline {subsubsection}{TrajectoryPlanner::generateTrajectorie}{18}{section*.11}%
 \contentsline {subsubsection}{TrajectoryPlanner::checkTrajectorie和TrajectoryPlanner::scoreTrajectorie}{21}{section*.12}%
 \contentsline {subsection}{\numberline {1.1.6}MapGrid类和MapCell类}{22}{subsection.1.1.6}%
+\contentsline {subsubsection}{MapGrid::setTargetCells}{22}{section*.13}%
+\contentsline {subsubsection}{MapGrid::setLocalGoal}{24}{section*.14}%
+\contentsline {subsubsection}{MapGrid::computeTargetDistance}{25}{section*.15}%
+\contentsline {subsection}{\numberline {1.1.7}CostmapModel类}{26}{subsection.1.1.7}%
+\contentsline {subsubsection}{CostmapModel::lineCost}{27}{section*.16}%
+\contentsline {subsubsection}{CostmapModel::footprintCost}{27}{section*.17}%

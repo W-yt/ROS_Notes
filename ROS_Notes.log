@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.13)  29 NOV 2021 00:33
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.11.13)  5 DEC 2021 21:00
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -450,7 +450,7 @@ Package fontspec Info: Font family 'FandolSong-Regular(0)' created for font
 LaTeX Warning: Unused global option(s):
     [9pt].
 
-No file ROS_Notes.aux.
+(./ROS_Notes.aux)
 \openout1 = `ROS_Notes.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
@@ -463,7 +463,7 @@ LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
 LaTeX Font Info:    ... okay on input line 33.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 33.
 LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 33.
-(/usr/local/texlive/2021/texmf-dist/tex/latex/base/ts1cmr.fd
+ (/usr/local/texlive/2021/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 33.
@@ -546,12 +546,10 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 33.
 LaTeX Info: Redefining \pageref on input line 33.
 LaTeX Info: Redefining \nameref on input line 33.
+ (./ROS_Notes.out) (./ROS_Notes.out)
 \@outlinefile=\write3
 \openout3 = `ROS_Notes.out'.
 
-
-
-Package hyperref Warning: Rerun to get /PageLabels entry.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -606,13 +604,13 @@ Underfull \hbox (badness 10000) in paragraph at lines 56--57
 
  []
 
-[1]
+[1] (./ROS_Notes.toc [1
+
+] [2] [3] [4])
 \tf@toc=\write4
 \openout4 = `ROS_Notes.toc'.
 
- [1
-
-]
+ [5]
 Chapter 1.
 File: image/ROS1架构.jpg Graphic file (type bmp)
 <image/ROS1架构.jpg>
@@ -705,15 +703,7 @@ File: image/link标签.png Graphic file (type bmp)
 ]
 File: image/joint标签.png Graphic file (type bmp)
 <image/joint标签.png>
- [27] [28] [29]
-
-LaTeX Warning: Reference `subsec:joint' on page 30 undefined on input line 1214.
-
-[30]
-
-LaTeX Warning: Reference `subsec:joint' on page 31 undefined on input line 1251.
-
-
+ [27] [28] [29] [30]
 Overfull \hbox (13.76794pt too wide) in paragraph at lines 1285--1285
 []                \TU/lmtt/m/n/10 <cylinder length="${base_link_length}" radius="${base_link_radius}"/>[] 
  []
@@ -965,146 +955,4 @@ File: image/navfn.png Graphic file (type bmp)
 <image/navfn.png>
  [83] [84]
 Overfull \hbox (11.66805pt too wide) in paragraph at lines 3519--3519
-[]    \TU/lmtt/m/n/9 planner_ = boost::shared_ptr<NavFn>(new NavFn(costmap_->getSizeInCellsX(), costmap_->getSi[] 
- []
-
-[85]
-Overfull \hbox (9.31001pt too wide) in paragraph at lines 3602--3602
-[]            \TU/lmtt/m/n/8 ROS_ERROR("Failed to get a plan from potential when a legal potential was found. This should[] 
- []
-
-[86] [87] [88] [89]
-Overfull \hbox (16.3933pt too wide) in paragraph at lines 3747--3747
-[]                    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 重 新 将 其 赋 值 为 \TU/lmtt/m/n/9 COST_NEUTRAL(50)+ \TU/FandolFang-Regular(0)/m/n/9 当 前 \TU/lmtt/m/n/9 cell \TU/FandolFang-Regular(0)/m/n/9 在 \TU/lmtt/m/n/9 costmap \TU/FandolFang-Regular(0)/m/n/9 上 的 值 \TU/lmtt/m/n/9 × \TU/FandolFang-Regular(0)/m/n/9 比 例 \TU/lmtt/m/n/9 0.8 \TU/FandolFang-Regular(0)/m/n/9 （ 最 高 \TU/lmtt/m/n/9 253 \TU/FandolFang-Regular(0)/m/n/9 ） [] 
- []
-
-[90]
-Overfull \hbox (11.66835pt too wide) in paragraph at lines 3790--3790
-[]    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 设 置 \TU/lmtt/m/n/9 costarr \TU/FandolFang-Regular(0)/m/n/9 的 四 条 边 的 \TU/lmtt/m/n/9 cell \TU/FandolFang-Regular(0)/m/n/9 的 值 为 \TU/lmtt/m/n/9 COST_OBS( \TU/FandolFang-Regular(0)/m/n/9 致 命 层 \TU/lmtt/m/n/9 254) \TU/FandolFang-Regular(0)/m/n/9 ， 封 闭 地 图 四 周 ， 以 防 产 生 边 界 以 外 的 轨 迹 [] 
- []
-
-[91] [92] [93] [94]
-File: image/pot_simple_equation.png Graphic file (type bmp)
-<image/pot_simple_equation.png>
-File: image/pot_hard_equation.png Graphic file (type bmp)
-<image/pot_hard_equation.png>
- [95] [96]
-File: image/curT_off.png Graphic file (type bmp)
-<image/curT_off.png>
-File: image/curT_on.png Graphic file (type bmp)
-<image/curT_on.png>
- [97] [98] [99]
-Overfull \hbox (17.806pt too wide) in paragraph at lines 4158--4158
-[]            \TU/lmtt/m/n/8 ROS_DEBUG("[Path] Pot: %0.1f  pos: %0.1f,%0.1f", potarr[stc], pathx[npath-1], pathy[npath-1]);[] 
- []
-
-
-Overfull \hbox (13.55803pt too wide) in paragraph at lines 4158--4158
-[]            \TU/lmtt/m/n/8 ROS_DEBUG("[Path] %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f  %0.2f,%0.2f; final x=%.3f, y=%.3f\n"[] 
- []
-
-[100]
-Overfull \hbox (13.55795pt too wide) in paragraph at lines 4158--4158
-[]        \TU/lmtt/m/n/8 , gradx[stc], grady[stc], gradx[stc+1], grady[stc+1], gradx[stcnx], grady[stcnx], gradx[stcnx+1],[] 
- []
-
-File: image/example_costmap.png Graphic file (type bmp)
-<image/example_costmap.png>
-File: image/example_potarr.jpg Graphic file (type bmp)
-<image/example_potarr.jpg>
-[101]
-File: image/example_gradx.png Graphic file (type bmp)
-<image/example_gradx.png>
-File: image/example_grady.png Graphic file (type bmp)
-<image/example_grady.png>
- [102] [103]
-Overfull \hbox (6.94336pt too wide) in paragraph at lines 4266--4266
-[]    \TU/lmtt/m/n/9 // \TU/FandolFang-Regular(0)/m/n/9 对 翻 译 生 成 的 \TU/lmtt/m/n/9 costarr \TU/FandolFang-Regular(0)/m/n/9 数 组 进 行 了 边 际 设 置 等 处 理 ， 并 初 始 化 了 \TU/lmtt/m/n/9 potarr \TU/FandolFang-Regular(0)/m/n/9 数 组 和 梯 度 数 组 \TU/lmtt/m/n/9 gradx \TU/FandolFang-Regular(0)/m/n/9 、 \TU/lmtt/m/n/9 grady[] 
- []
-
-
-Overfull \hbox (55.52682pt too wide) in paragraph at lines 4271--4272
-[]\TU/FandolSong-Regular(0)/m/n/10 全 局 路 径 规 划 $\OML/cmm/m/it/10 BaseGlobalPlanner$ \TU/FandolSong-Regular(0)/m/n/10 的 $\OML/cmm/m/it/10 plugin$ \TU/FandolSong-Regular(0)/m/n/10 有 三 种\TU/lmr/m/n/10 : $\OML/cmm/m/it/10 navfn\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 NavfnROS$\TU/FandolSong-Regular(0)/m/n/10 ，| $\OML/cmm/m/it/10 global[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 GlobalPlanner$\TU/lmr/m/n/10 ,
- []
-
-
-Overfull \hbox (34.89886pt too wide) in paragraph at lines 4271--4272
-\OML/cmm/m/it/10 carrot[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 CarrotPlanner$\TU/lmr/m/n/10 . \TU/FandolSong-Regular(0)/m/n/10 其 中 常 用 的 为 $\OML/cmm/m/it/10 global[]planner\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 GlobalPlanner$\TU/FandolSong-Regular(0)/m/n/10 ，|  它 是 $\OML/cmm/m/it/10 navfn\OT1/cmr/m/n/10 /\OML/cmm/m/it/10 NavfnROS$
- []
-
-[104]
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4274.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `superscript' on input line 4274.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4274.
-
-File: image/global_planner.png Graphic file (type bmp)
-<image/global_planner.png>
-[105] [106]
-Overfull \hbox (0.81396pt too wide) in paragraph at lines 4360--4360
-[]        \TU/lmtt/m/n/8 make_plan_service_ = private_nh.advertiseService("make_plan", &PlannerWithCostmap::makePlanSer[] 
- []
-
-
-Overfull \hbox (5.06198pt too wide) in paragraph at lines 4360--4360
-[]        \TU/lmtt/m/n/8 pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal", 1, &PlannerWithCostmap::poseCallback,[] 
- []
-
-[107] [108]
-Overfull \hbox (2.21838pt too wide) in paragraph at lines 4482--4482
-[]            \TU/lmtt/m/n/9 //pop_heap() \TU/FandolFang-Regular(0)/m/n/9 是 将 堆 顶 元 素 与 最 后 一 个 元 素 交 换 位 置 ， 之 后 用 \TU/lmtt/m/n/9 pop_back \TU/FandolFang-Regular(0)/m/n/9 将 最 后 一 个 元 素 删 除 [] 
- []
-
-[109]
-Overfull \hbox (13.55798pt too wide) in paragraph at lines 4531--4531
-[]        \TU/lmtt/m/n/8 potential[next_i] = p_calc_->calculatePotential(potential, costs[next_i] + neutral_cost_, next_i,[] 
- []
-
-[110]
-Overfull \hbox (17.80606pt too wide) in paragraph at lines 4531--4531
-[]        \TU/lmtt/m/n/8 // \TU/FandolFang-Regular(0)/m/n/8 计 算 \TU/lmtt/m/n/8 distance \TU/FandolFang-Regular(0)/m/n/8 ： 从 节 点 \TU/lmtt/m/n/8 n \TU/FandolFang-Regular(0)/m/n/8 到 目 标 点 最 佳 路 径 的 估 计 代 价 ， 这 里 选 用 了 曼 哈 顿 距 离 （ 不 能 斜 着 走   且 无 视 障 碍 物 ） [] 
- []
-
-
-Overfull \hbox (9.31003pt too wide) in paragraph at lines 4531--4531
-[]        \TU/lmtt/m/n/8 //distance \TU/FandolFang-Regular(0)/m/n/8 只 是 格 子 个 数 ， 还 有 乘 上 每 个 格 子 的 真 实 距 离 或 是 分 辨 率 ， 所 以 最 后 \TU/lmtt/m/n/8 h = distance*neutral_cost_[] 
- []
-
-[111] [112]
-Overfull \hbox (16.39305pt too wide) in paragraph at lines 4633--4633
-[]    \TU/lmtt/m/n/9 virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_po[] 
- []
-
-[113] (./ROS_Notes.aux)
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `ROS_Notes.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `ROS_Notes.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  A2B04BCFA7A0C546F63738EF260233DE;17566.
- ) 
-Here is how much of TeX's memory you used:
- 14224 strings out of 476919
- 299793 string characters out of 5821839
- 651965 words of memory out of 5000000
- 33924 multiletter control sequences out of 15000+600000
- 419616 words of font info for 130 fonts, out of 8000000 for 9000
- 1348 hyphenation exceptions out of 8191
- 82i,16n,88p,466b,896s stack positions out of 5000i,500n,10000p,200000b,80000s
-
-Output written on ROS_Notes.pdf (116 pages).
+[]    \TU/lmtt/m/n/9 planner_ = boost::shared_ptr<NavFn>(new NavFn(costmap_->ge
