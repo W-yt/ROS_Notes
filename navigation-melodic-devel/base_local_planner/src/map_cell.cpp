@@ -36,17 +36,21 @@
 
 namespace base_local_planner{
 
+  //MapCell就代表地图上的一个cell，它记录x、y坐标(索引)
+  //target_dist表示目标距离,初始化为无穷大,经过path_map和goal_map的计算后,表示该cell距goal/path的距离
+  //target_mark是该点已更新过target_dist的flag
+  //within_robot表示该点在机器人足迹范围内
+
   MapCell::MapCell()
     : cx(0), cy(0),
       target_dist(DBL_MAX),
       target_mark(false),
-      within_robot(false)
-  {}
+      within_robot(false){}
 
   MapCell::MapCell(const MapCell& mc)
     : cx(mc.cx), cy(mc.cy),
       target_dist(mc.target_dist),
       target_mark(mc.target_mark),
-      within_robot(mc.within_robot)
-  {}
+      within_robot(mc.within_robot){}
+      
 };
