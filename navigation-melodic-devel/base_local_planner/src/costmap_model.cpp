@@ -42,88 +42,95 @@ using namespace std;
 using namespace costmap_2d;
 
 namespace base_local_planner {
+
+  //CostmapModel类派生自WorldModel类
+  //在TrajectoryPlanner中被使用，承担局部规划器与局部规划Costmap之间的桥梁工作
+  
+  //CostmapModel类帮助局部规划器在Costmap上进行计算
+  //footprintCost、lineCost、pointCost三个函数分别能通过Costmap计算出：
+  //    机器人足迹范围的代价、两个cell连线的代价、单个cell的代价，并将值返回给局部规划器
+
   CostmapModel::CostmapModel(const Costmap2D& ma) : costmap_(ma) {}
 
-  double CostmapModel::footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
-      double inscribed_radius, double circumscribed_radius){
+  double CostmapModel::footprintCost(const geometry_msgs::Point& position, 
+                                     const std::vector<geometry_msgs::Point>& footprint,
+                                     double inscribed_radius, double circumscribed_radius){
     // returns:
     //  -1 if footprint covers at least a lethal obstacle cell, or
     //  -2 if footprint covers at least a no-information cell, or
     //  -3 if footprint is [partially] outside of the map, or
     //  a positive value for traversable space
 
-    //used to put things into grid coordinates
     unsigned int cell_x, cell_y;
 
-    //get the cell coord of the center point of the robot
+    //获取机器人中心点的cell坐标，存放在cell_x cell_y中
+    //如果得不到坐标，说明不在地图上，直接返回-3
     if(!costmap_.worldToMap(position.x, position.y, cell_x, cell_y))
       return -3.0;
 
-    //if number of points in the footprint is less than 3, we'll just assume a circular robot
+    //如果脚印点数小于三，默认机器人形状为圆形，不考虑脚印，只考虑中心
     if(footprint.size() < 3){
       unsigned char cost = costmap_.getCost(cell_x, cell_y);
+      //如果中心位于未知代价的cell上，返回-2
       if(cost == NO_INFORMATION)
         return -2.0;
+      //如果中心位于致命障碍cell上，返回-1 (这几个宏是在costvalue中定义的，是灰度值)
       if(cost == LETHAL_OBSTACLE || cost == INSCRIBED_INFLATED_OBSTACLE)
         return -1.0;
+      //如果机器人位置既不是未知也不是致命，返回它的代价
       return cost;
     }
 
-    //now we really have to lay down the footprint in the costmap grid
+    //如果脚印点数小于三，需要考虑机器人的形状，把足迹视为多边形
     unsigned int x0, x1, y0, y1;
     double line_cost = 0.0;
     double footprint_cost = 0.0;
 
     //we need to rasterize each line in the footprint
     for(unsigned int i = 0; i < footprint.size() - 1; ++i){
-      //get the cell coord of the first point
+      //获取第一个点的cell坐标
       if(!costmap_.worldToMap(footprint[i].x, footprint[i].y, x0, y0))
         return -3.0;
-
-      //get the cell coord of the second point
+      //获取第二个点的cell坐标
       if(!costmap_.worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1))
         return -3.0;
 
+      //得到两点连线的代价
       line_cost = lineCost(x0, x1, y0, y1);
       footprint_cost = std::max(line_cost, footprint_cost);
 
-      //if there is an obstacle that hits the line... we know that we can return false right away
+      //如果某条边缘线段代价<0(碰到了障碍)，直接停止生成代价，返回这个负代价
       if(line_cost < 0)
         return line_cost;
     }
 
-    //we also need to connect the first point in the footprint to the last point
-    //get the cell coord of the last point
+    //再把footprint的最后一个点和第一个点连起来，形成封闭图形
     if(!costmap_.worldToMap(footprint.back().x, footprint.back().y, x0, y0))
       return -3.0;
-
-    //get the cell coord of the first point
     if(!costmap_.worldToMap(footprint.front().x, footprint.front().y, x1, y1))
       return -3.0;
-
     line_cost = lineCost(x0, x1, y0, y1);
     footprint_cost = std::max(line_cost, footprint_cost);
-
     if(line_cost < 0)
       return line_cost;
 
-    //if all line costs are legal... then we can return that the footprint is legal
+    //如果所有边缘线的代价都是合法的，那么返回足迹的代价
     return footprint_cost;
-
   }
 
-  //calculate the cost of a ray-traced line
+  //计算两点连线的代价
   double CostmapModel::lineCost(int x0, int x1, int y0, int y1) const {
     double line_cost = 0.0;
     double point_cost = -1.0;
 
-    for( LineIterator line( x0, y0, x1, y1 ); line.isValid(); line.advance() )
-    {
-      point_cost = pointCost( line.getX(), line.getY() ); //Score the current point
+    for(LineIterator line( x0, y0, x1, y1 ); line.isValid(); line.advance()){
+      //LineIterator类的advance函数就是取线上的下一个点,然后getX和getY函数获取点的坐标
+      point_cost = pointCost(line.getX(), line.getY());
 
       if(point_cost < 0)
         return point_cost;
 
+      //两点连线的代价就是线上点的最大代价?
       if(line_cost < point_cost)
         line_cost = point_cost;
     }

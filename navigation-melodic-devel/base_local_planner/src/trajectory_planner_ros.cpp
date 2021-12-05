@@ -91,7 +91,7 @@ namespace base_local_planner {
   void TrajectoryPlannerROS::initialize(std::string name,
                                         tf2_ros::Buffer* tf,
                                         costmap_2d::Costmap2DROS* costmap_ros){
-    if (! isInitialized()) {
+    if (!isInitialized()) {
       ros::NodeHandle private_nh("~/" + name);
       //发布全局规划在~/本地规划器名称/global_plan话题上
       g_plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
@@ -310,7 +310,9 @@ namespace base_local_planner {
   }
 
   //机器人已达目标位置范围而姿态未达姿态要求时，在调整姿态前，将机器人速度降至阈值以下
-  bool TrajectoryPlannerROS::stopWithAccLimits(const geometry_msgs::PoseStamped& global_pose, const geometry_msgs::PoseStamped& robot_vel, geometry_msgs::Twist& cmd_vel){
+  bool TrajectoryPlannerROS::stopWithAccLimits(const geometry_msgs::PoseStamped& global_pose, 
+                                               const geometry_msgs::PoseStamped& robot_vel, 
+                                               geometry_msgs::Twist& cmd_vel){
     //x方向速度 = (当前x向速度符号)× max(0,当前x向速度绝对值-最大加速度×仿真周期)
     double vx = sign(robot_vel.pose.position.x) * std::max(0.0, (fabs(robot_vel.pose.position.x) - acc_lim_x_ * sim_period_));
     double vy = sign(robot_vel.pose.position.y) * std::max(0.0, (fabs(robot_vel.pose.position.y) - acc_lim_y_ * sim_period_));
@@ -341,7 +343,7 @@ namespace base_local_planner {
   bool TrajectoryPlannerROS::rotateToGoal(const geometry_msgs::PoseStamped& global_pose, const geometry_msgs::PoseStamped& robot_vel, double goal_th, geometry_msgs::Twist& cmd_vel){、
     //机器人姿态的偏角yaw
     double yaw = tf2::getYaw(global_pose.pose.orientation);
-    //机器人速度的航偏角vel_yaw ? 
+    //机器人速度的航偏角vel_yaw? 
     double vel_yaw = tf2::getYaw(robot_vel.pose.orientation);
     
     //线速度设置为0
@@ -389,19 +391,19 @@ namespace base_local_planner {
   }
 
   //该函数的作用为传入全局规划(与全局路径的贴合程度将作为局部规划路线的一个打分项)
+  //Movebase通过调用这个函数传入当前位置和目标点间规划好的全局路径(全局规划的结果传递给局部规划器)
   bool TrajectoryPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan){
-    if (! isInitialized()) {
+    if (!isInitialized()) {
       ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
       return false;
     }
 
-    //reset the global plan
     global_plan_.clear();
     global_plan_ = orig_global_plan;
     
     //when we get a new plan, we also want to clear any latch we may have on goal tolerances
     xy_tolerance_latch_ = false;
-    //reset the at goal flag
+
     reached_goal_ = false;
     return true;
   }
@@ -409,12 +411,13 @@ namespace base_local_planner {
   //该函数在Movebase的executeCycle函数中被调用
   //executeCycle函数本身是被循环执行的，所以能够不断进行局部速度规划，获得连续的速度指令，控制机器人行动
   bool TrajectoryPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel){
-    if (! isInitialized()) {
+    if (!isInitialized()) {
       ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
       return false;
     }
 
     std::vector<geometry_msgs::PoseStamped> local_plan;
+
     geometry_msgs::PoseStamped global_pose;
     //获取global系的当前位姿(使用从底盘到global的转换)
     if (!costmap_ros_->getRobotPose(global_pose)) {
@@ -423,15 +426,16 @@ namespace base_local_planner {
 
     //将全局规划结果global_plan_从map系转换到global系，得到transformed_plan
     std::vector<geometry_msgs::PoseStamped> transformed_plan;
-    if (!transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, transformed_plan)) {
+    if (!transformGlobalPlan(*tf_, global_plan_, global_pose, *costmap_, global_frame_, transformed_plan)){
       ROS_WARN("Could not transform the global plan to the frame of the controller");
       return false;
     }
 
     //判断是否要修剪全局规划
     //修剪是指在机器人前进的过程中，将一定阈值外的走过的路径点从global_plan_和transformed_plan中去掉
-    if(prune_plan_)
+    if(prune_plan_){
       prunePlan(global_pose, transformed_plan, global_plan_);
+    }
 
     //速度控制指令，坐标系是机器人底盘坐标系
     geometry_msgs::PoseStamped drive_cmds;
@@ -460,8 +464,7 @@ namespace base_local_planner {
 
     //如果机器人已经到达了目标周围
     if (xy_tolerance_latch_ || (getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolerance_)) {
-      //if the user wants to latch goal tolerance, if we ever reach the goal location, we'll
-      //just rotate in place
+      //if the user wants to latch goal tolerance, if we ever reach the goal location, we'll just rotate in place
       if (latch_xy_goal_tolerance_) {
         xy_tolerance_latch_ = true;
       }
@@ -507,13 +510,10 @@ namespace base_local_planner {
           }
         }
       }
-
       //发布一个空的plan 因为已经到了目标位置
       publishPlan(transformed_plan, g_plan_pub_);
       publishPlan(local_plan, l_plan_pub_);
 
-      //我们不像在只是旋转到目标的姿态时运行这个控制器？
-      //we don't actually want to run the controller when we're just rotating to goal
       return true;
     }
 
@@ -575,6 +575,8 @@ namespace base_local_planner {
     return true;
   }
 
+  //checkTrajectory和scoreTrajectory是在足够接近目标时，局部规划器产生降速和自转时生成的对应速度的路径
+  //它们各自调用TrajectoryPlanner类的同名函数
   bool TrajectoryPlannerROS::checkTrajectory(double vx_samp, double vy_samp, double vtheta_samp, bool update_map){
     geometry_msgs::PoseStamped global_pose;
     if(costmap_ros_->getRobotPose(global_pose)){

@@ -870,7 +870,7 @@ namespace move_base {
       lock.unlock();
       ROS_DEBUG_NAMED("move_base","pointers swapped!");
 
-      //在实例tc_上调用局部规划器的类函数setPlan() 把全局规划的结果传递给局部规划器，如果传递失败，退出并返回。
+      //在实例tc_上调用局部规划器的类函数setPlan()把全局规划的结果传递给局部规划器，如果传递失败，退出并返回。
       if(!tc_->setPlan(*controller_plan_)){
         //ABORT and SHUTDOWN COSTMAPS
         ROS_ERROR("Failed to pass global plan to the controller, aborting.");

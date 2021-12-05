@@ -36,6 +36,8 @@
 
 namespace base_local_planner{
 
+  //MapGrid和MapCell类用于局部规划的计算
+
   //MapCell就代表地图上的一个cell，它记录x、y坐标(索引)
   //target_dist表示目标距离,初始化为无穷大,经过path_map和goal_map的计算后,表示该cell距goal/path的距离
   //target_mark是该点已更新过target_dist的flag
@@ -51,6 +53,5 @@ namespace base_local_planner{
     : cx(mc.cx), cy(mc.cy),
       target_dist(mc.target_dist),
       target_mark(mc.target_mark),
-      within_robot(mc.within_robot){}
-      
+      within_robot(mc.within_robot){} 
 };
