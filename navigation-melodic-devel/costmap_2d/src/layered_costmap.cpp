@@ -46,6 +46,8 @@ using std::vector;
 
 namespace costmap_2d
 {
+  //LayeredCostmap类是Costmap2DROS的成员，含有主地图，并能通过它操作各层子地图
+  
   LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bool track_unknown) :
       costmap_(),
       global_frame_(global_frame),
@@ -62,44 +64,45 @@ namespace costmap_2d
       initialized_(false),
       size_locked_(false),
       circumscribed_radius_(1.0),
-      inscribed_radius_(0.1)
-  {
+      inscribed_radius_(0.1){
     if (track_unknown)
       costmap_.setDefaultValue(255);
     else
       costmap_.setDefaultValue(0);
   }
 
-  LayeredCostmap::~LayeredCostmap()
-  {
-    while (plugins_.size() > 0)
-    {
+  LayeredCostmap::~LayeredCostmap(){
+    while (plugins_.size() > 0){
       plugins_.pop_back();
     }
   }
 
-  void LayeredCostmap::resizeMap(unsigned int size_x, unsigned int size_y, double resolution, double origin_x,
-                                double origin_y, bool size_locked)
-  {
+  //该函数在Costmap2DROS动态配置参数的回调函数ReconfigureCB中被调用
+  //作用是在开启地图更新线程之前，调用Costmap2D的resizeMap函数，用给定参数重新设置主地图的尺寸、原点、分辨率
+  //再通过plugin指针调用各层地图的matchSize，使其以上参数和主地图匹配
+  void LayeredCostmap::resizeMap(unsigned int size_x, unsigned int size_y, double resolution, 
+                                 double origin_x, double origin_y, bool size_locked){
     boost::unique_lock<Costmap2D::mutex_t> lock(*(costmap_.getMutex()));
     size_locked_ = size_locked;
     costmap_.resizeMap(size_x, size_y, resolution, origin_x, origin_y);
-    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-        ++plugin)
-    {
+    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); 
+         plugin != plugins_.end(); ++plugin){
       (*plugin)->matchSize();
     }
   }
 
-  void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
-  {
+  //该函数在Costmap2DROS的地图更新线程中被循环调用
+  //该函数分为两步:   
+  //              第一步: 更新bound，即确定地图更新的范围；
+  //              第二步: 更新cost，更新每层地图cell对应的cost值后整合到主地图上
+  void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw){
     // Lock for the remainder of this function, some plugins (e.g. VoxelLayer)
     // implement thread unsafe updateBounds() functions.
     boost::unique_lock<Costmap2D::mutex_t> lock(*(costmap_.getMutex()));
 
-    // if we're using a rolling buffer costmap... we need to update the origin using the robot's position
-    if (rolling_window_)
-    {
+    //rolling_window_默认为false，如果开启的话，地图是时刻跟随机器人中心移动的
+    if (rolling_window_){
+      //这里需要根据机器人当前位置和地图大小计算出地图的新原点，设置给主地图
       double new_origin_x = robot_x - costmap_.getSizeInMetersX() / 2;
       double new_origin_y = robot_y - costmap_.getSizeInMetersY() / 2;
       costmap_.updateOrigin(new_origin_x, new_origin_y);
@@ -111,16 +114,16 @@ namespace costmap_2d
     minx_ = miny_ = 1e30;
     maxx_ = maxy_ = -1e30;
 
-    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-        ++plugin)
-    {
+    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); 
+         plugin != plugins_.end(); ++plugin){
       double prev_minx = minx_;
       double prev_miny = miny_;
       double prev_maxx = maxx_;
       double prev_maxy = maxy_;
+      //对每一层的子地图调用其updateBounds函数(updateBounds函数在Layer类中声明，在各层地图中被重载)
+      //updateBounds传入的是一个矩形范围
       (*plugin)->updateBounds(robot_x, robot_y, robot_yaw, &minx_, &miny_, &maxx_, &maxy_);
-      if (minx_ > prev_minx || miny_ > prev_miny || maxx_ < prev_maxx || maxy_ < prev_maxy)
-      {
+      if (minx_ > prev_minx || miny_ > prev_miny || maxx_ < prev_maxx || maxy_ < prev_maxy){
         ROS_WARN_THROTTLE(1.0, "Illegal bounds change, was [tl: (%f, %f), br: (%f, %f)], but "
                           "is now [tl: (%f, %f), br: (%f, %f)]. The offending layer is %s",
                           prev_minx, prev_miny, prev_maxx , prev_maxy,
@@ -130,6 +133,8 @@ namespace costmap_2d
     }
 
     int x0, xn, y0, yn;
+    //调用Costmap2D类的worldToMapEnforceBounds函数，将得到的bound转换到地图坐标系
+    //防止转换后的坐标超出地图范围
     costmap_.worldToMapEnforceBounds(minx_, miny_, x0, y0);
     costmap_.worldToMapEnforceBounds(maxx_, maxy_, xn, yn);
 
@@ -143,10 +148,11 @@ namespace costmap_2d
     if (xn < x0 || yn < y0)
       return;
 
+    //调用resetMap，将主地图上bound范围内的cell的cost恢复为默认值(track_unknown:255; 否则:0)
     costmap_.resetMap(x0, y0, xn, yn);
-    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-        ++plugin)
-    {
+    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); 
+         plugin != plugins_.end(); ++plugin){
+      //对每一层的子地图调用其updateCosts函数,更新各点的cost(updateCosts函数在Layer类中声明，在各层地图中被重载)
       (*plugin)->updateCosts(costmap_, x0, y0, xn, yn);
     }
 
@@ -158,25 +164,21 @@ namespace costmap_2d
     initialized_ = true;
   }
 
-  bool LayeredCostmap::isCurrent()
-  {
+  bool LayeredCostmap::isCurrent(){
     current_ = true;
-    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-        ++plugin)
-    {
+    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); 
+         plugin != plugins_.end(); ++plugin){
       current_ = current_ && (*plugin)->isCurrent();
     }
     return current_;
   }
 
-  void LayeredCostmap::setFootprint(const std::vector<geometry_msgs::Point>& footprint_spec)
-  {
+  void LayeredCostmap::setFootprint(const std::vector<geometry_msgs::Point>& footprint_spec){
     footprint_ = footprint_spec;
     costmap_2d::calculateMinAndMaxDistances(footprint_spec, inscribed_radius_, circumscribed_radius_);
 
-    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-        ++plugin)
-    {
+    for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); 
+         plugin != plugins_.end(); ++plugin){
       (*plugin)->onFootprintChanged();
     }
   }

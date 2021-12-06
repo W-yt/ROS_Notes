@@ -44,16 +44,14 @@
 #include <vector>
 #include <string>
 
-namespace costmap_2d
-{
+namespace costmap_2d{
   class Layer;
 
   /**
    * @class LayeredCostmap
    * @brief Instantiates different layer plugins and aggregates them into one score
    */
-  class LayeredCostmap
-  {
+  class LayeredCostmap{
     public:
       /**
        * @brief  Constructor for a costmap
@@ -79,8 +77,7 @@ namespace costmap_2d
       void resizeMap(unsigned int size_x, unsigned int size_y, double resolution, double origin_x, double origin_y,
                     bool size_locked = false);
 
-      void getUpdatedBounds(double& minx, double& miny, double& maxx, double& maxy)
-      {
+      void getUpdatedBounds(double& minx, double& miny, double& maxx, double& maxy){
         minx = minx_;
         miny = miny_;
         maxx = maxx_;

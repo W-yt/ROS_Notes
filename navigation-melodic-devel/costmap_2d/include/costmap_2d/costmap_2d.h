@@ -353,7 +353,9 @@ class Costmap2D{
        * @param  max_length The maximum desired length of the segment... allows you to not go all the way to the endpoint
        */
       template<class ActionType>
-        inline void raytraceLine(ActionType at, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1,
+        //对于离散的平面点，指定两个点，这个函数可以找到两个点之间的其他点，使得这些中间组成一个尽可能趋近直线的点集
+        inline void raytraceLine(ActionType at, unsigned int x0, unsigned int y0, 
+                                 unsigned int x1, unsigned int y1,
                                  unsigned int max_length = UINT_MAX){
           int dx = x1 - x0;
           int dy = y1 - y0;

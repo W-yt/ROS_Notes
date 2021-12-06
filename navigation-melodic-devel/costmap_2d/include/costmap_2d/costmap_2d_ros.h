@@ -50,29 +50,24 @@
 #include <pluginlib/class_loader.hpp>
 #include <tf2/LinearMath/Transform.h>
 
-class SuperValue : public XmlRpc::XmlRpcValue
-{
-public:
-  void setStruct(XmlRpc::XmlRpcValue::ValueStruct* a)
-  {
-    _type = TypeStruct;
-    _value.asStruct = new XmlRpc::XmlRpcValue::ValueStruct(*a);
-  }
-  void setArray(XmlRpc::XmlRpcValue::ValueArray* a)
-  {
-    _type = TypeArray;
-    _value.asArray = new std::vector<XmlRpc::XmlRpcValue>(*a);
-  }
+class SuperValue : public XmlRpc::XmlRpcValue{
+  public:
+    void setStruct(XmlRpc::XmlRpcValue::ValueStruct* a){
+      _type = TypeStruct;
+      _value.asStruct = new XmlRpc::XmlRpcValue::ValueStruct(*a);
+    }
+    void setArray(XmlRpc::XmlRpcValue::ValueArray* a){
+      _type = TypeArray;
+      _value.asArray = new std::vector<XmlRpc::XmlRpcValue>(*a);
+    }
 };
 
-namespace costmap_2d
-{
+namespace costmap_2d{
 
 /** @brief A ROS wrapper for a 2D Costmap. Handles subscribing to
  * topics that provide observations about obstacles in either the form
  * of PointCloud or LaserScan messages. */
-class Costmap2DROS
-{
+class Costmap2DROS{
 public:
   /**
    * @brief  Constructor for the wrapper
@@ -112,10 +107,9 @@ public:
   void resetLayers();
 
   /** @brief Same as getLayeredCostmap()->isCurrent(). */
-  bool isCurrent()
-    {
-      return layered_costmap_->isCurrent();
-    }
+  bool isCurrent(){
+    return layered_costmap_->isCurrent();
+  }
 
   /**
    * @brief Get the pose of the robot in the global frame of the costmap
