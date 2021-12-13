@@ -39,201 +39,206 @@
 \contentsline {subsection}{\numberline {2.6.3}自定义动作数据}{15}{subsection.2.6.3}%
 \contentsline {subsection}{\numberline {2.6.4}CMakeLists的编写}{15}{subsection.2.6.4}%
 \contentsline {section}{\numberline {2.7}ROS中的命名空间}{15}{section.2.7}%
-\contentsline {subsection}{\numberline {2.7.1}有效的命名}{15}{subsection.2.7.1}%
-\contentsline {subsection}{\numberline {2.7.2}命名解析}{15}{subsection.2.7.2}%
-\contentsline {subsubsection}{全局名称：/global/name}{15}{section*.6}%
-\contentsline {subsubsection}{相对名称：relative/name}{15}{section*.7}%
+\contentsline {subsection}{\numberline {2.7.1}命名空间的规则}{15}{subsection.2.7.1}%
+\contentsline {subsection}{\numberline {2.7.2}有效的命名}{15}{subsection.2.7.2}%
+\contentsline {subsection}{\numberline {2.7.3}命名解析}{16}{subsection.2.7.3}%
+\contentsline {subsubsection}{全局名称：/global/name}{16}{section*.6}%
+\contentsline {subsubsection}{相对名称：relative/name}{16}{section*.7}%
 \contentsline {subsubsection}{私有名称：\nobreakspace {}private/name}{16}{section*.8}%
-\contentsline {subsubsection}{ROS命名解析总结}{16}{section*.9}%
-\contentsline {subsection}{\numberline {2.7.3}命名重映射}{16}{subsection.2.7.3}%
-\contentsline {section}{\numberline {2.8}多机通信}{17}{section.2.8}%
-\contentsline {subsubsection}{设置IP地址}{17}{section*.10}%
-\contentsline {subsubsection}{设置ROS\_MASTER\_URI}{17}{section*.11}%
-\contentsline {chapter}{\numberline {3}ROS中的常用组件}{18}{chapter.3}%
-\contentsline {section}{\numberline {3.1}launch文件}{18}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}启动节点}{18}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}系统参数设置}{19}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.1.3}设置内部变量}{19}{subsection.3.1.3}%
-\contentsline {subsection}{\numberline {3.1.4}重映射机制}{19}{subsection.3.1.4}%
-\contentsline {subsection}{\numberline {3.1.5}嵌套复用}{19}{subsection.3.1.5}%
-\contentsline {section}{\numberline {3.2}TF坐标变换}{20}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}TF辅助工具}{20}{subsection.3.2.1}%
-\contentsline {subsubsection}{1.tf\_monitor}{20}{section*.12}%
-\contentsline {subsubsection}{2.tf\_echo}{20}{section*.13}%
-\contentsline {subsubsection}{3.static\_transform\_publisher?}{20}{section*.14}%
-\contentsline {subsubsection}{4.view\_frame}{20}{section*.15}%
-\contentsline {subsection}{\numberline {3.2.2}TF中的Boardcaster和Listener}{21}{subsection.3.2.2}%
-\contentsline {subsubsection}{创建Broadcaster}{21}{section*.16}%
-\contentsline {subsubsection}{创建Listener}{22}{section*.17}%
-\contentsline {section}{\numberline {3.3}Qt工具箱}{23}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}日志输出工具\ rqt\_consile}{23}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}计算图可视化工具\ rqt\_graph}{24}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}数据绘制工具\ rqt\_plot}{24}{subsection.3.3.3}%
-\contentsline {subsection}{\numberline {3.3.4}参数动态配置工具\ rqt\_reconfigure}{24}{subsection.3.3.4}%
-\contentsline {section}{\numberline {3.4}rviz三维可视化平台}{24}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Gazebo仿真环境}{24}{section.3.5}%
-\contentsline {section}{\numberline {3.6}rosbag数据记录与回放}{24}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}记录数据}{24}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}回放数据}{25}{subsection.3.6.2}%
-\contentsline {chapter}{\numberline {4}机器人的建模与仿真}{26}{chapter.4}%
-\contentsline {section}{\numberline {4.1}URDF文件}{26}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}<link>标签}{26}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}<joint>标签}{27}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}<robot>标签}{28}{subsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.1.4}<gazebo>标签}{28}{subsection.4.1.4}%
-\contentsline {section}{\numberline {4.2}创建URDF模型}{29}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}创建功能包}{29}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}URDF模型代码}{29}{subsection.4.2.2}%
-\contentsline {subsubsection}{part 1}{29}{section*.18}%
-\contentsline {subsubsection}{part 2}{29}{section*.19}%
-\contentsline {subsubsection}{part 3}{30}{section*.20}%
-\contentsline {subsubsection}{part 4}{30}{section*.21}%
-\contentsline {subsubsection}{part 5}{31}{section*.22}%
-\contentsline {subsubsection}{添加物理和碰撞属性}{31}{section*.23}%
-\contentsline {section}{\numberline {4.3}使用xacro优化URDF模型}{32}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}xacro的三个机制}{32}{subsection.4.3.1}%
-\contentsline {subsubsection}{使用常量定义}{32}{section*.24}%
-\contentsline {subsubsection}{调用数学公式}{32}{section*.25}%
-\contentsline {subsubsection}{使用宏定义}{32}{section*.26}%
-\contentsline {subsection}{\numberline {4.3.2}引用xacro文件}{34}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}显示xacro优化后的模型}{34}{subsection.4.3.3}%
-\contentsline {subsubsection}{将xacro文件转化成URDF文件}{34}{section*.27}%
-\contentsline {subsubsection}{直接调用xacro文件解析器}{34}{section*.28}%
-\contentsline {section}{\numberline {4.4}添加传感器模型}{34}{section.4.4}%
-\contentsline {section}{\numberline {4.5}基于ArbotiX和rviz的仿真器}{35}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}在ROS-melodic中安装ArbotiX}{35}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}配置ArbotiX控制器}{36}{subsection.4.5.2}%
-\contentsline {subsubsection}{修改launch文件}{36}{section*.29}%
-\contentsline {subsubsection}{创建配置文件}{36}{section*.30}%
-\contentsline {subsection}{\numberline {4.5.3}运行仿真}{37}{subsection.4.5.3}%
-\contentsline {section}{\numberline {4.6}ros\_control}{37}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}ros\_control的框架}{37}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}控制器}{37}{subsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.6.3}硬件接口}{38}{subsection.4.6.3}%
-\contentsline {subsection}{\numberline {4.6.4}传动系统}{38}{subsection.4.6.4}%
-\contentsline {subsection}{\numberline {4.6.5}关节约束}{38}{subsection.4.6.5}%
-\contentsline {subsection}{\numberline {4.6.6}控制器管理器}{38}{subsection.4.6.6}%
-\contentsline {section}{\numberline {4.7}Gazebo仿真}{38}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}配置机器人模型}{38}{subsection.4.7.1}%
-\contentsline {subsubsection}{为link添加惯性参数和碰撞属性}{38}{section*.31}%
-\contentsline {subsubsection}{为link添加<gazebo>标签}{39}{section*.32}%
-\contentsline {subsubsection}{为joint添加传动装置}{39}{section*.33}%
-\contentsline {subsubsection}{添加Gazebo控制器插件}{40}{section*.34}%
-\contentsline {subsection}{\numberline {4.7.2}显示机器人模型}{42}{subsection.4.7.2}%
-\contentsline {subsection}{\numberline {4.7.3}摄像头仿真}{43}{subsection.4.7.3}%
-\contentsline {subsection}{\numberline {4.7.4}Kinect仿真}{44}{subsection.4.7.4}%
-\contentsline {subsection}{\numberline {4.7.5}激光雷达仿真}{46}{subsection.4.7.5}%
-\contentsline {chapter}{\numberline {5}机器人SLAM与自主导航}{48}{chapter.5}%
-\contentsline {section}{\numberline {5.1}准备工作}{48}{section.5.1}%
-\contentsline {subsection}{\numberline {5.1.1}机器人要求}{48}{subsection.5.1.1}%
-\contentsline {subsection}{\numberline {5.1.2}传感器信息}{48}{subsection.5.1.2}%
-\contentsline {subsubsection}{环境深度信息}{48}{section*.35}%
-\contentsline {subsubsection}{里程计信息}{49}{section*.36}%
-\contentsline {section}{\numberline {5.2}gmapping}{50}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}gmapping功能包介绍}{50}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}gmapping节点配置与运行}{51}{subsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.2.3}在Gazebo中仿真SLAM(gmapping)}{53}{subsection.5.2.3}%
-\contentsline {section}{\numberline {5.3}hector-slam}{53}{section.5.3}%
-\contentsline {section}{\numberline {5.4}cartographer}{53}{section.5.4}%
-\contentsline {section}{\numberline {5.5}rgbdslam}{53}{section.5.5}%
-\contentsline {section}{\numberline {5.6}ORB\_SLAM}{54}{section.5.6}%
-\contentsline {section}{\numberline {5.7}导航功能包}{54}{section.5.7}%
-\contentsline {subsection}{\numberline {5.7.1}导航框架}{54}{subsection.5.7.1}%
-\contentsline {subsection}{\numberline {5.7.2}move\_base功能包}{55}{subsection.5.7.2}%
-\contentsline {subsection}{\numberline {5.7.3}amcl功能包}{56}{subsection.5.7.3}%
-\contentsline {subsection}{\numberline {5.7.4}代价地图的配置}{57}{subsection.5.7.4}%
-\contentsline {subsubsection}{通用配置文件}{57}{section*.37}%
-\contentsline {subsubsection}{全局规划配置文件}{59}{section*.38}%
-\contentsline {subsubsection}{本地规划配置文件}{59}{section*.39}%
-\contentsline {subsection}{\numberline {5.7.5}本地规划器配置}{60}{subsection.5.7.5}%
-\contentsline {chapter}{\numberline {6}Navigation详细学习}{62}{chapter.6}%
-\contentsline {section}{\numberline {6.1}三维空间中的刚体运动(基础知识补充)}{62}{section.6.1}%
-\contentsline {subsection}{\numberline {6.1.1}向量}{63}{subsection.6.1.1}%
-\contentsline {subsection}{\numberline {6.1.2}欧式变换}{63}{subsection.6.1.2}%
-\contentsline {subsection}{\numberline {6.1.3}旋转矩阵}{64}{subsection.6.1.3}%
-\contentsline {subsection}{\numberline {6.1.4}变换矩阵与齐次坐标}{64}{subsection.6.1.4}%
-\contentsline {subsection}{\numberline {6.1.5}旋转向量}{65}{subsection.6.1.5}%
-\contentsline {subsubsection}{旋转矩阵到旋转向量的转换:}{65}{section*.40}%
-\contentsline {subsection}{\numberline {6.1.6}欧拉角}{66}{subsection.6.1.6}%
-\contentsline {subsection}{\numberline {6.1.7}四元数}{66}{subsection.6.1.7}%
-\contentsline {subsubsection}{四元数与旋转向量的转换：}{67}{section*.41}%
-\contentsline {subsubsection}{四元数与旋转矩阵的转换：}{67}{section*.42}%
-\contentsline {subsubsection}{用四元数表示旋转：}{67}{section*.43}%
-\contentsline {subsection}{\numberline {6.1.8}四元数的运算}{68}{subsection.6.1.8}%
-\contentsline {section}{\numberline {6.2}move\_base源码学习}{68}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}源码相关文件}{68}{subsection.6.2.1}%
-\contentsline {subsection}{\numberline {6.2.2}整体结构图}{69}{subsection.6.2.2}%
-\contentsline {subsection}{\numberline {6.2.3}move\_base\_node.cpp}{70}{subsection.6.2.3}%
-\contentsline {subsection}{\numberline {6.2.4}move\_base.cpp}{70}{subsection.6.2.4}%
-\contentsline {subsubsection}{函数列表}{70}{section*.44}%
-\contentsline {subsubsection}{MoveBase::MoveBase()}{71}{section*.45}%
-\contentsline {subsubsection}{MoveBase::executeCb()}{72}{section*.46}%
-\contentsline {subsubsection}{MoveBase::planThread()}{74}{section*.47}%
-\contentsline {subsubsection}{MoveBase::makePlan()}{75}{section*.48}%
-\contentsline {subsubsection}{MoveBase::executeCycle()}{76}{section*.49}%
-\contentsline {subsubsection}{MoveBase::reconfigureCB}{80}{section*.50}%
-\contentsline {subsubsection}{MoveBase::planService}{81}{section*.51}%
-\contentsline {subsubsection}{MoveBase::loadRecoveryBehaviors}{82}{section*.52}%
-\contentsline {subsubsection}{MoveBase::loadDefaultRecoveryBehaviors}{82}{section*.53}%
-\contentsline {section}{\numberline {6.3}navfn源码学习}{83}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}Dijkstra算法原理}{83}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}源码相关文件}{83}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}整体结构图}{84}{subsection.6.3.3}%
-\contentsline {subsection}{\numberline {6.3.4}navfn\_ros.cpp}{84}{subsection.6.3.4}%
-\contentsline {subsubsection}{函数列表}{84}{section*.54}%
-\contentsline {subsubsection}{NavfnROS::initialize}{85}{section*.55}%
-\contentsline {subsubsection}{NavfnROS::makePlan}{85}{section*.56}%
-\contentsline {subsubsection}{NavfnROS::getPointPotential}{87}{section*.57}%
-\contentsline {subsubsection}{NavfnROS::getPlanFromPotential}{87}{section*.58}%
-\contentsline {subsection}{\numberline {6.3.5}navfn.cpp}{89}{subsection.6.3.5}%
-\contentsline {subsubsection}{函数列表}{89}{section*.59}%
-\contentsline {subsubsection}{NavFn::setCostmap}{89}{section*.60}%
-\contentsline {subsubsection}{NavFn::setupNavFn}{90}{section*.61}%
-\contentsline {subsubsection}{NavFn::propNavFnDijkstra}{92}{section*.62}%
-\contentsline {subsubsection}{NavFn::updateCell}{94}{section*.63}%
-\contentsline {subsubsection}{NavFn::calcPath}{98}{section*.64}%
-\contentsline {subsubsection}{NavFn::gradCell}{103}{section*.65}%
-\contentsline {subsubsection}{NavFn::calcNavFnDijkstra}{104}{section*.66}%
-\contentsline {section}{\numberline {6.4}global\_planner源码学习}{105}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}$A^*$算法原理}{105}{subsection.6.4.1}%
-\contentsline {subsection}{\numberline {6.4.2}源码相关文件}{105}{subsection.6.4.2}%
-\contentsline {subsection}{\numberline {6.4.3}整体结构图}{106}{subsection.6.4.3}%
-\contentsline {subsection}{\numberline {6.4.4}参数配置}{106}{subsection.6.4.4}%
-\contentsline {subsection}{\numberline {6.4.5}plan\_node.cpp}{107}{subsection.6.4.5}%
-\contentsline {subsection}{\numberline {6.4.6}planner\_core.cpp}{107}{subsection.6.4.6}%
-\contentsline {subsubsection}{GlobalPlanner::initialize}{107}{section*.67}%
-\contentsline {subsubsection}{GlobalPlanner::makePlan}{108}{section*.68}%
-\contentsline {subsection}{\numberline {6.4.7}aster.cpp}{108}{subsection.6.4.7}%
-\contentsline {subsubsection}{AStarExpansion::calculatePotentials}{109}{section*.69}%
-\contentsline {subsubsection}{AStarExpansion::add}{110}{section*.70}%
-\contentsline {subsection}{\numberline {6.4.8}grid\_path.cpp}{111}{subsection.6.4.8}%
-\contentsline {subsection}{\numberline {6.4.9}gradient\_path.cpp}{112}{subsection.6.4.9}%
-\contentsline {subsection}{\numberline {6.4.10}potential\_calculator.h}{112}{subsection.6.4.10}%
-\contentsline {subsection}{\numberline {6.4.11}quadratic\_calculator.cpp}{113}{subsection.6.4.11}%
-\contentsline {subsection}{\numberline {6.4.12}expander.h}{113}{subsection.6.4.12}%
-\contentsline {subsection}{\numberline {6.4.13}traceback.h}{113}{subsection.6.4.13}%
-\contentsline {section}{\numberline {6.5}base\_local\_planner源码学习}{113}{section.6.5}%
-\contentsline {subsection}{\numberline {6.5.1}源码相关文件}{114}{subsection.6.5.1}%
-\contentsline {subsection}{\numberline {6.5.2}整体结构图}{115}{subsection.6.5.2}%
-\contentsline {subsection}{\numberline {6.5.3}参数配置}{115}{subsection.6.5.3}%
-\contentsline {subsection}{\numberline {6.5.4}trajectory\_planner\_ros.cpp}{116}{subsection.6.5.4}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::initialize}{116}{section*.71}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::setPlan}{116}{section*.72}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::computeVelocityCommands}{117}{section*.73}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::stopWithAccLimits}{121}{section*.74}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::rotateToGoal}{122}{section*.75}%
-\contentsline {subsubsection}{TrajectoryPlannerROS::checkTrajectory和TrajectoryPlannerROS::scoreTrajectory}{123}{section*.76}%
-\contentsline {subsection}{\numberline {6.5.5}trajectory\_planner.cpp}{123}{subsection.6.5.5}%
-\contentsline {subsubsection}{TrajectoryPlanner::updatePlan}{124}{section*.77}%
-\contentsline {subsubsection}{TrajectoryPlanner::findBestPath}{124}{section*.78}%
-\contentsline {subsubsection}{TrajectoryPlanner::createTrajectories}{126}{section*.79}%
-\contentsline {subsubsection}{TrajectoryPlanner::generateTrajectorie}{132}{section*.80}%
-\contentsline {subsubsection}{TrajectoryPlanner::checkTrajectorie和TrajectoryPlanner::scoreTrajectorie}{135}{section*.81}%
-\contentsline {subsection}{\numberline {6.5.6}MapGrid类和MapCell类}{135}{subsection.6.5.6}%
-\contentsline {subsubsection}{MapGrid::setTargetCells}{136}{section*.82}%
-\contentsline {subsubsection}{MapGrid::setLocalGoal}{137}{section*.83}%
-\contentsline {subsubsection}{MapGrid::computeTargetDistance}{139}{section*.84}%
-\contentsline {subsection}{\numberline {6.5.7}CostmapModel类}{140}{subsection.6.5.7}%
-\contentsline {subsubsection}{CostmapModel::lineCost}{140}{section*.85}%
-\contentsline {subsubsection}{CostmapModel::footprintCost}{141}{section*.86}%
-\contentsline {section}{\numberline {6.6}amcl源码学习}{143}{section.6.6}%
+\contentsline {subsubsection}{ROS命名解析总结}{17}{section*.9}%
+\contentsline {subsection}{\numberline {2.7.4}命名重映射}{17}{subsection.2.7.4}%
+\contentsline {subsection}{\numberline {2.7.5}命名空间解决名称冲突示例}{17}{subsection.2.7.5}%
+\contentsline {subsubsection}{通过添加命名空间来解决冲突}{17}{section*.10}%
+\contentsline {subsubsection}{通过重映射来解决冲突}{18}{section*.11}%
+\contentsline {subsection}{\numberline {2.7.6}使用NodeHandle构造函数指定命名空间}{18}{subsection.2.7.6}%
+\contentsline {section}{\numberline {2.8}多机通信}{18}{section.2.8}%
+\contentsline {subsubsection}{设置IP地址}{18}{section*.12}%
+\contentsline {subsubsection}{设置ROS\_MASTER\_URI}{18}{section*.13}%
+\contentsline {chapter}{\numberline {3}ROS中的常用组件}{20}{chapter.3}%
+\contentsline {section}{\numberline {3.1}launch文件}{20}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}启动节点}{20}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}系统参数设置}{21}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}设置内部变量}{21}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}重映射机制}{21}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}嵌套复用}{21}{subsection.3.1.5}%
+\contentsline {section}{\numberline {3.2}TF坐标变换}{22}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}TF辅助工具}{22}{subsection.3.2.1}%
+\contentsline {subsubsection}{1.tf\_monitor}{22}{section*.14}%
+\contentsline {subsubsection}{2.tf\_echo}{22}{section*.15}%
+\contentsline {subsubsection}{3.static\_transform\_publisher?}{22}{section*.16}%
+\contentsline {subsubsection}{4.view\_frame}{22}{section*.17}%
+\contentsline {subsection}{\numberline {3.2.2}TF中的Boardcaster和Listener}{23}{subsection.3.2.2}%
+\contentsline {subsubsection}{创建Broadcaster}{23}{section*.18}%
+\contentsline {subsubsection}{创建Listener}{24}{section*.19}%
+\contentsline {section}{\numberline {3.3}Qt工具箱}{25}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}日志输出工具\ rqt\_consile}{25}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}计算图可视化工具\ rqt\_graph}{26}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}数据绘制工具\ rqt\_plot}{26}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}参数动态配置工具\ rqt\_reconfigure}{26}{subsection.3.3.4}%
+\contentsline {section}{\numberline {3.4}rviz三维可视化平台}{26}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Gazebo仿真环境}{26}{section.3.5}%
+\contentsline {section}{\numberline {3.6}rosbag数据记录与回放}{26}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}记录数据}{26}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}回放数据}{27}{subsection.3.6.2}%
+\contentsline {chapter}{\numberline {4}机器人的建模与仿真}{28}{chapter.4}%
+\contentsline {section}{\numberline {4.1}URDF文件}{28}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}<link>标签}{28}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}<joint>标签}{29}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}<robot>标签}{30}{subsection.4.1.3}%
+\contentsline {subsection}{\numberline {4.1.4}<gazebo>标签}{30}{subsection.4.1.4}%
+\contentsline {section}{\numberline {4.2}创建URDF模型}{31}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}创建功能包}{31}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}URDF模型代码}{31}{subsection.4.2.2}%
+\contentsline {subsubsection}{part 1}{31}{section*.20}%
+\contentsline {subsubsection}{part 2}{31}{section*.21}%
+\contentsline {subsubsection}{part 3}{32}{section*.22}%
+\contentsline {subsubsection}{part 4}{32}{section*.23}%
+\contentsline {subsubsection}{part 5}{33}{section*.24}%
+\contentsline {subsubsection}{添加物理和碰撞属性}{33}{section*.25}%
+\contentsline {section}{\numberline {4.3}使用xacro优化URDF模型}{34}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}xacro的三个机制}{34}{subsection.4.3.1}%
+\contentsline {subsubsection}{使用常量定义}{34}{section*.26}%
+\contentsline {subsubsection}{调用数学公式}{34}{section*.27}%
+\contentsline {subsubsection}{使用宏定义}{34}{section*.28}%
+\contentsline {subsection}{\numberline {4.3.2}引用xacro文件}{36}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}显示xacro优化后的模型}{36}{subsection.4.3.3}%
+\contentsline {subsubsection}{将xacro文件转化成URDF文件}{36}{section*.29}%
+\contentsline {subsubsection}{直接调用xacro文件解析器}{36}{section*.30}%
+\contentsline {section}{\numberline {4.4}添加传感器模型}{36}{section.4.4}%
+\contentsline {section}{\numberline {4.5}基于ArbotiX和rviz的仿真器}{37}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}在ROS-melodic中安装ArbotiX}{37}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}配置ArbotiX控制器}{38}{subsection.4.5.2}%
+\contentsline {subsubsection}{修改launch文件}{38}{section*.31}%
+\contentsline {subsubsection}{创建配置文件}{38}{section*.32}%
+\contentsline {subsection}{\numberline {4.5.3}运行仿真}{39}{subsection.4.5.3}%
+\contentsline {section}{\numberline {4.6}ros\_control}{39}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}ros\_control的框架}{39}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}控制器}{39}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}硬件接口}{40}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}传动系统}{40}{subsection.4.6.4}%
+\contentsline {subsection}{\numberline {4.6.5}关节约束}{40}{subsection.4.6.5}%
+\contentsline {subsection}{\numberline {4.6.6}控制器管理器}{40}{subsection.4.6.6}%
+\contentsline {section}{\numberline {4.7}Gazebo仿真}{40}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}配置机器人模型}{40}{subsection.4.7.1}%
+\contentsline {subsubsection}{为link添加惯性参数和碰撞属性}{40}{section*.33}%
+\contentsline {subsubsection}{为link添加<gazebo>标签}{41}{section*.34}%
+\contentsline {subsubsection}{为joint添加传动装置}{41}{section*.35}%
+\contentsline {subsubsection}{添加Gazebo控制器插件}{42}{section*.36}%
+\contentsline {subsection}{\numberline {4.7.2}显示机器人模型}{44}{subsection.4.7.2}%
+\contentsline {subsection}{\numberline {4.7.3}摄像头仿真}{45}{subsection.4.7.3}%
+\contentsline {subsection}{\numberline {4.7.4}Kinect仿真}{46}{subsection.4.7.4}%
+\contentsline {subsection}{\numberline {4.7.5}激光雷达仿真}{48}{subsection.4.7.5}%
+\contentsline {chapter}{\numberline {5}机器人SLAM与自主导航}{50}{chapter.5}%
+\contentsline {section}{\numberline {5.1}准备工作}{50}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}机器人要求}{50}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}传感器信息}{50}{subsection.5.1.2}%
+\contentsline {subsubsection}{环境深度信息}{50}{section*.37}%
+\contentsline {subsubsection}{里程计信息}{51}{section*.38}%
+\contentsline {section}{\numberline {5.2}gmapping}{52}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}gmapping功能包介绍}{52}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}gmapping节点配置与运行}{53}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}在Gazebo中仿真SLAM(gmapping)}{55}{subsection.5.2.3}%
+\contentsline {section}{\numberline {5.3}hector-slam}{55}{section.5.3}%
+\contentsline {section}{\numberline {5.4}cartographer}{55}{section.5.4}%
+\contentsline {section}{\numberline {5.5}rgbdslam}{55}{section.5.5}%
+\contentsline {section}{\numberline {5.6}ORB\_SLAM}{56}{section.5.6}%
+\contentsline {section}{\numberline {5.7}导航功能包}{56}{section.5.7}%
+\contentsline {subsection}{\numberline {5.7.1}导航框架}{56}{subsection.5.7.1}%
+\contentsline {subsection}{\numberline {5.7.2}move\_base功能包}{57}{subsection.5.7.2}%
+\contentsline {subsection}{\numberline {5.7.3}amcl功能包}{58}{subsection.5.7.3}%
+\contentsline {subsection}{\numberline {5.7.4}代价地图的配置}{59}{subsection.5.7.4}%
+\contentsline {subsubsection}{通用配置文件}{59}{section*.39}%
+\contentsline {subsubsection}{全局规划配置文件}{61}{section*.40}%
+\contentsline {subsubsection}{本地规划配置文件}{61}{section*.41}%
+\contentsline {subsection}{\numberline {5.7.5}本地规划器配置}{62}{subsection.5.7.5}%
+\contentsline {chapter}{\numberline {6}Navigation详细学习}{64}{chapter.6}%
+\contentsline {section}{\numberline {6.1}三维空间中的刚体运动(基础知识补充)}{64}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}向量}{65}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}欧式变换}{65}{subsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.1.3}旋转矩阵}{66}{subsection.6.1.3}%
+\contentsline {subsection}{\numberline {6.1.4}变换矩阵与齐次坐标}{66}{subsection.6.1.4}%
+\contentsline {subsection}{\numberline {6.1.5}旋转向量}{67}{subsection.6.1.5}%
+\contentsline {subsubsection}{旋转矩阵到旋转向量的转换:}{67}{section*.42}%
+\contentsline {subsection}{\numberline {6.1.6}欧拉角}{68}{subsection.6.1.6}%
+\contentsline {subsection}{\numberline {6.1.7}四元数}{68}{subsection.6.1.7}%
+\contentsline {subsubsection}{四元数与旋转向量的转换：}{69}{section*.43}%
+\contentsline {subsubsection}{四元数与旋转矩阵的转换：}{69}{section*.44}%
+\contentsline {subsubsection}{用四元数表示旋转：}{69}{section*.45}%
+\contentsline {subsection}{\numberline {6.1.8}四元数的运算}{70}{subsection.6.1.8}%
+\contentsline {section}{\numberline {6.2}move\_base源码学习}{70}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}源码相关文件}{70}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}整体结构图}{71}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}move\_base\_node.cpp}{72}{subsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.2.4}move\_base.cpp}{72}{subsection.6.2.4}%
+\contentsline {subsubsection}{函数列表}{72}{section*.46}%
+\contentsline {subsubsection}{MoveBase::MoveBase()}{73}{section*.47}%
+\contentsline {subsubsection}{MoveBase::executeCb()}{74}{section*.48}%
+\contentsline {subsubsection}{MoveBase::planThread()}{76}{section*.49}%
+\contentsline {subsubsection}{MoveBase::makePlan()}{77}{section*.50}%
+\contentsline {subsubsection}{MoveBase::executeCycle()}{78}{section*.51}%
+\contentsline {subsubsection}{MoveBase::reconfigureCB}{82}{section*.52}%
+\contentsline {subsubsection}{MoveBase::planService}{83}{section*.53}%
+\contentsline {subsubsection}{MoveBase::loadRecoveryBehaviors}{84}{section*.54}%
+\contentsline {subsubsection}{MoveBase::loadDefaultRecoveryBehaviors}{84}{section*.55}%
+\contentsline {section}{\numberline {6.3}navfn源码学习}{85}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Dijkstra算法原理}{85}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}源码相关文件}{85}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}整体结构图}{86}{subsection.6.3.3}%
+\contentsline {subsection}{\numberline {6.3.4}navfn\_ros.cpp}{86}{subsection.6.3.4}%
+\contentsline {subsubsection}{函数列表}{86}{section*.56}%
+\contentsline {subsubsection}{NavfnROS::initialize}{87}{section*.57}%
+\contentsline {subsubsection}{NavfnROS::makePlan}{87}{section*.58}%
+\contentsline {subsubsection}{NavfnROS::getPointPotential}{89}{section*.59}%
+\contentsline {subsubsection}{NavfnROS::getPlanFromPotential}{89}{section*.60}%
+\contentsline {subsection}{\numberline {6.3.5}navfn.cpp}{91}{subsection.6.3.5}%
+\contentsline {subsubsection}{函数列表}{91}{section*.61}%
+\contentsline {subsubsection}{NavFn::setCostmap}{91}{section*.62}%
+\contentsline {subsubsection}{NavFn::setupNavFn}{92}{section*.63}%
+\contentsline {subsubsection}{NavFn::propNavFnDijkstra}{94}{section*.64}%
+\contentsline {subsubsection}{NavFn::updateCell}{96}{section*.65}%
+\contentsline {subsubsection}{NavFn::calcPath}{100}{section*.66}%
+\contentsline {subsubsection}{NavFn::gradCell}{105}{section*.67}%
+\contentsline {subsubsection}{NavFn::calcNavFnDijkstra}{106}{section*.68}%
+\contentsline {section}{\numberline {6.4}global\_planner源码学习}{107}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}$A^*$算法原理}{107}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}源码相关文件}{107}{subsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.4.3}整体结构图}{108}{subsection.6.4.3}%
+\contentsline {subsection}{\numberline {6.4.4}参数配置}{108}{subsection.6.4.4}%
+\contentsline {subsection}{\numberline {6.4.5}plan\_node.cpp}{109}{subsection.6.4.5}%
+\contentsline {subsection}{\numberline {6.4.6}planner\_core.cpp}{109}{subsection.6.4.6}%
+\contentsline {subsubsection}{GlobalPlanner::initialize}{109}{section*.69}%
+\contentsline {subsubsection}{GlobalPlanner::makePlan}{110}{section*.70}%
+\contentsline {subsection}{\numberline {6.4.7}aster.cpp}{110}{subsection.6.4.7}%
+\contentsline {subsubsection}{AStarExpansion::calculatePotentials}{111}{section*.71}%
+\contentsline {subsubsection}{AStarExpansion::add}{112}{section*.72}%
+\contentsline {subsection}{\numberline {6.4.8}grid\_path.cpp}{113}{subsection.6.4.8}%
+\contentsline {subsection}{\numberline {6.4.9}gradient\_path.cpp}{114}{subsection.6.4.9}%
+\contentsline {subsection}{\numberline {6.4.10}potential\_calculator.h}{114}{subsection.6.4.10}%
+\contentsline {subsection}{\numberline {6.4.11}quadratic\_calculator.cpp}{115}{subsection.6.4.11}%
+\contentsline {subsection}{\numberline {6.4.12}expander.h}{115}{subsection.6.4.12}%
+\contentsline {subsection}{\numberline {6.4.13}traceback.h}{115}{subsection.6.4.13}%
+\contentsline {section}{\numberline {6.5}base\_local\_planner源码学习}{115}{section.6.5}%
+\contentsline {subsection}{\numberline {6.5.1}源码相关文件}{116}{subsection.6.5.1}%
+\contentsline {subsection}{\numberline {6.5.2}整体结构图}{117}{subsection.6.5.2}%
+\contentsline {subsection}{\numberline {6.5.3}参数配置}{117}{subsection.6.5.3}%
+\contentsline {subsection}{\numberline {6.5.4}trajectory\_planner\_ros.cpp}{118}{subsection.6.5.4}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::initialize}{118}{section*.73}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::setPlan}{118}{section*.74}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::computeVelocityCommands}{119}{section*.75}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::stopWithAccLimits}{123}{section*.76}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::rotateToGoal}{124}{section*.77}%
+\contentsline {subsubsection}{TrajectoryPlannerROS::checkTrajectory和TrajectoryPlannerROS::scoreTrajectory}{125}{section*.78}%
+\contentsline {subsection}{\numberline {6.5.5}trajectory\_planner.cpp}{125}{subsection.6.5.5}%
+\contentsline {subsubsection}{TrajectoryPlanner::updatePlan}{126}{section*.79}%
+\contentsline {subsubsection}{TrajectoryPlanner::findBestPath}{126}{section*.80}%
+\contentsline {subsubsection}{TrajectoryPlanner::createTrajectories}{128}{section*.81}%
+\contentsline {subsubsection}{TrajectoryPlanner::generateTrajectorie}{134}{section*.82}%
+\contentsline {subsubsection}{TrajectoryPlanner::checkTrajectorie和TrajectoryPlanner::scoreTrajectorie}{137}{section*.83}%
+\contentsline {subsection}{\numberline {6.5.6}MapGrid类和MapCell类}{137}{subsection.6.5.6}%
+\contentsline {subsubsection}{MapGrid::setTargetCells}{138}{section*.84}%
+\contentsline {subsubsection}{MapGrid::setLocalGoal}{139}{section*.85}%
+\contentsline {subsubsection}{MapGrid::computeTargetDistance}{141}{section*.86}%
+\contentsline {subsection}{\numberline {6.5.7}CostmapModel类}{142}{subsection.6.5.7}%
+\contentsline {subsubsection}{CostmapModel::lineCost}{142}{section*.87}%
+\contentsline {subsubsection}{CostmapModel::footprintCost}{143}{section*.88}%
+\contentsline {section}{\numberline {6.6}amcl源码学习}{145}{section.6.6}%

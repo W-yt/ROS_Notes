@@ -592,6 +592,17 @@ Client向Server端发布任务目标以及在必要的时候取消任务，Serve
 
 \section{ROS中的命名空间}
 
+$ROS$基本组件分为$nodes$、$Parameters$、$Topics$和$Services$。每个组件都带有一个命名空间。
+
+\subsection{命名空间的规则}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.9\linewidth]{image/namespace_rule.png}
+\end{figure}
+
+组件名格式是: 第一级名字/第二级名字/第三级名字/第四级名字，对于一个具体的Parameters、Topics和Services可以没有第二和第三级名字。
+
 \subsection{有效的命名}
 
 \begin{itemize}
@@ -693,6 +704,50 @@ export ROS_NAMESPACE = default-namespace
     /baz   & /foo:=/a/b/c/bar & /foo         & /a/b/c/bar \\ \hline
     \end{tabular}
 \end{table}
+
+\subsection{命名空间解决名称冲突示例}
+
+在学习$ROS$中演示教程$turtlesim$时，我们创建两个“小龟”,由于默认的节点名都是“$turtlesim$”，因此通过$rosrun turtlesim turtlesim_node$运行$turtlesim\_node$节点则会关闭前一个，因为名称冲突了。
+
+\subsubsection{通过添加命名空间来解决冲突}
+
+\begin{verbatim}
+    rosrun turtlesim turtlesim_node __ns:=/aa/bb
+    rosrun turtlesim turtlesim_node __ns:=/aa/cc
+\end{verbatim}
+
+使用$rqt\_graph$来查看节点关系:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.5\linewidth]{image/namespace_eg1.png}
+\end{figure}
+
+\subsubsection{通过重映射来解决冲突}
+
+除了添加命名空间可以区分相同名字的资源，还可以给资源起一个别名，这就是重映射的本意。
+
+\begin{verbatim}
+    rosrun turtlesim turtlesim_node __name:=A
+    rosrun turtlesim turtlesim_node __name:=B
+\end{verbatim}
+
+使用$rqt\_graph$来查看节点关系:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.5\linewidth]{image/namespace_eg2.png}
+\end{figure}
+
+\subsection{使用NodeHandle构造函数指定命名空间}
+
+% 首先，目前所在的node有一个<node_namespace>
+
+
+
+\begin{verbatim}
+    ros::NodeHandle n;
+\end{verbatim}
 
 \section{多机通信}
 
